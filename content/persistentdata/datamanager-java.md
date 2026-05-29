@@ -1,0 +1,80 @@
+# DataManager.java
+
+## Explanation
+
+This file defines the DataManager class in the persistentdata package. It belongs to src/persistentdata in the COMP2100 MiniLab codebase and contains implementation logic for its codebase module. Key methods include getInstance, readAll, writeAll.
+
+## Complexity
+
+Complexity depends on the methods used in this class. Review loops, collection operations, and persistence calls for exact bounds.
+
+## UML
+
+```mermaid
+classDiagram
+class DataManager {
+  -instance: DataManager
+  +getInstance() DataManager
+  +readAll() void
+  +writeAll() void
+}
+```
+
+## Code
+```java
+package persistentdata;
+
+import dao.PostDAO;
+import dao.UserDAO;
+import dao.model.Message;
+import dao.model.Post;
+import dao.model.User;
+import persistentdata.formatted.CSVFormat;
+import persistentdata.formatted.CSVFormattedFactory;
+import persistentdata.io.ComputerIOFactory;
+import persistentdata.io.IOFactory;
+import persistentdata.serialization.MessageSerializer;
+import persistentdata.serialization.PostSerializer;
+import persistentdata.serialization.UserSerializer;
+
+public class DataManager {
+	private static DataManager instance;
+	public static DataManager getInstance() {
+		if (instance == null)
+			instance = new DataManager();
+		return instance;
+	}
+
+	private final IOFactory IO = new ComputerIOFactory();
+
+	// We have assumed that most solutions to the serialization task in week-5 will
+	// use a 4-column schema for Users. If this is not the case, you may need to
+	// change the number below.
+	private final DataPipeline<User, String[]> userPipeline = new DataPipeline<>(
+			IO, new CSVFormattedFactory(new CSVFormat(4)), new UserSerializer(), "users");
+
+	private final DataPipeline<Post, String[]> postPipeline = new DataPipeline<>(
+			IO, new CSVFormattedFactory(new CSVFormat(3)), new PostSerializer(), "posts");
+
+	private final DataPipeline<Message, String[]> messagePipeline = new DataPipeline<>(
+			IO, new CSVFormattedFactory(new CSVFormat(5)), new MessageSerializer(), "messages");
+
+	private final UserDAO users = UserDAO.getInstance();
+	private final PostDAO posts = PostDAO.getInstance();
+
+	public void readAll() {
+		users.clear();
+		posts.clear();
+		userPipeline.readTo(users::add);
+		postPipeline.readTo(posts::add);
+		messagePipeline.readTo((message) -> posts.get(new Post(message.thread())).messages.insert(message));
+	}
+
+	public void writeAll() {
+		userPipeline.writeFrom(users.getAll());
+		postPipeline.writeFrom(posts.getAll());
+		messagePipeline.writeFrom(posts.getAllMessages());
+	}
+}
+
+```

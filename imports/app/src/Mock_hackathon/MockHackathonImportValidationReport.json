@@ -1,0 +1,23 @@
+{
+  "implementationFiles": 128,
+  "testFiles": 128,
+  "packageHackathonFiles": 256,
+  "oldMockHackathonPackageFiles": 0,
+  "implementationFilesWithOriginalImports": 128,
+  "moduleCounts": {
+    "dao": 120,
+    "dao.model": 261,
+    "persistentdata": 120,
+    "persistentdata.formatted": 280,
+    "persistentdata.io": 80,
+    "persistentdata.serialization": 40,
+    "sorteddata": 100,
+    "sorteddata.avltree": 10,
+    "sorteddata.bstree": 10,
+    "sorteddata.sortedarraylist": 10,
+    "userstate": 40,
+    "censor": 40
+  },
+  "exceptionsWithoutOriginalImports": [],
+  "failures": []
+}

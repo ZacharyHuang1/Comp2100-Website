@@ -1,0 +1,198 @@
+# DS34_AutocompleteTrie.java
+
+## Explanation
+
+DS34_AutocompleteTrie is a Mock_hackathon practice implementation for DS34: Autocomplete trie. It is stored separately from the original MiniLab packages so it can be studied as an extension-style hackathon task without changing the base codebase.
+
+The feature is: Suggest usernames, communities, or keywords by prefix. The task is: Trie/prefix tree.
+
+This implementation imports dao.model.Post, dao.model.Message, and dao.model.User where relevant so the practice task can accept real MiniLab domain objects while still preserving a stable UUID/String API for isolated testing.
+
+The class stores normalized words in a trie with per-word frequency and lexicographic prefix suggestions.
+
+Important edge cases are handled directly in code and tests: empty input, duplicate data, missing records, replacement or removal behavior, and invalid keys where relevant. This makes the class suitable for a mini project hackathon because it demonstrates the core behavior clearly while remaining small enough to modify under time pressure.
+
+A Test Case block is attached to this implementation topic with JUnit 4 coverage for the DS34 catalogue behavior.
+
+## Complexity
+
+Software Architecture and UML Description:
+
+DS34_AutocompleteTrie is a Mock_hackathon practice extension that sits beside the DAO/model layer. It imports dao.model.Post, dao.model.Message, and dao.model.User so callers can pass real MiniLab domain objects, while the implementation stores independent ids, tokens, scores, queues, ranges, or graph links internally.
+
+In UML, draw dashed dependency arrows from this class to Post, Message, and User because it reads their public fields or record accessors but does not own their lifecycle. Internal maps, queues, nodes, and helper entries are implementation details owned by this class; show them with composition only if the diagram expands the data structure internals.
+
+PlantUML guidance:
+DS34_AutocompleteTrie ..> Post : reads post id/topic
+DS34_AutocompleteTrie ..> Message : reads message id/text/timestamp
+DS34_AutocompleteTrie ..> User : reads user id/username
+
+## UML
+
+```mermaid
+classDiagram
+class DS34_AutocompleteTrie {
+  - Node root
+  - int wordCount
+  + add(String word) void
+  + contains(String word) boolean
+  + frequency(String word) int
+  + suggest(String prefix, int limit) List~String~
+  + wordCount() int
+}
+class Node
+DS34_AutocompleteTrie *-- Node
+class Post
+class Message
+class User
+DS34_AutocompleteTrie ..> Post : accepts model object
+DS34_AutocompleteTrie ..> Message : accepts model object
+DS34_AutocompleteTrie ..> User : accepts model object
+```
+
+## Code
+```java
+package hackathon;
+
+import dao.model.Message;
+import dao.model.Post;
+import dao.model.User;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.TreeMap;
+
+/**
+ * DS34 practice implementation for autocomplete trie.
+ */
+public class DS34_AutocompleteTrie {
+    private final Node root = new Node();
+    private int wordCount;
+
+    // Creates an empty trie.
+    public DS34_AutocompleteTrie() {
+    }
+
+    // Adds one normalized word to the trie.
+    public void add(String word) {
+        String normalized = normalize(word);
+        if (normalized.isEmpty()) {
+            return;
+        }
+        Node current = root;
+        for (char ch : normalized.toCharArray()) {
+            current = current.children.computeIfAbsent(ch, key -> new Node());
+        }
+        if (current.frequency == 0) {
+            wordCount++;
+        }
+        current.frequency++;
+    }
+
+    // Checks whether a full word exists in the trie.
+    public boolean contains(String word) {
+        Node node = nodeFor(normalize(word));
+        return node != null && node.frequency > 0;
+    }
+
+    // Returns how many times a word has been added.
+    public int frequency(String word) {
+        Node node = nodeFor(normalize(word));
+        return node == null ? 0 : node.frequency;
+    }
+
+    // Returns sorted suggestions for a prefix.
+    public List<String> suggest(String prefix, int limit) {
+        String normalized = normalize(prefix);
+        Node node = nodeFor(normalized);
+        if (node == null || limit <= 0) {
+            return Collections.emptyList();
+        }
+        List<String> results = new ArrayList<>();
+        collect(node, normalized, results, limit);
+        return results;
+    }
+
+    // Returns the number of unique words stored.
+    public int wordCount() {
+        return wordCount;
+    }
+
+    // Returns the trie node for a prefix.
+    private Node nodeFor(String value) {
+        Node current = root;
+        for (char ch : value.toCharArray()) {
+            current = current.children.get(ch);
+            if (current == null) {
+                return null;
+            }
+        }
+        return current;
+    }
+
+    // Collects words below a node in lexical order.
+    private void collect(Node node, String prefix, List<String> results, int limit) {
+        if (results.size() >= limit) {
+            return;
+        }
+        if (node.frequency > 0) {
+            results.add(prefix);
+        }
+        for (Map.Entry<Character, Node> entry : node.children.entrySet()) {
+            collect(entry.getValue(), prefix + entry.getKey(), results, limit);
+        }
+    }
+
+    // Normalizes a word for trie storage.
+    private String normalize(String word) {
+        return String.valueOf(word).toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]", "");
+    }
+
+    private static class Node {
+        private final Map<Character, Node> children = new TreeMap<>();
+        private int frequency;
+
+        // Creates an empty trie node.
+        private Node() {
+        }
+    }
+    // Adds words from a MiniLab Post topic and replies.
+    public void addPost(Post post) {
+        if (post == null) {
+            return;
+        }
+        addWords(post.topic);
+        Iterator<Message> messages = post.messages.getAll();
+        while (messages.hasNext()) {
+            addMessage(messages.next());
+        }
+    }
+
+    // Adds words from a MiniLab Message body.
+    public void addMessage(Message message) {
+        if (message != null) {
+            addWords(message.message());
+        }
+    }
+
+    // Adds words from a MiniLab username.
+    public void addUser(User user) {
+        if (user != null) {
+            addWords(user.username());
+        }
+    }
+
+    // Adds every normalized word from free text.
+    private void addWords(String text) {
+        for (String raw : String.valueOf(text).split("[^A-Za-z0-9]+")) {
+            add(raw);
+        }
+    }
+
+
+}
+
+```

@@ -1,0 +1,5 @@
+ALTER TABLE contents
+  ADD COLUMN IF NOT EXISTS uml TEXT;
+
+ALTER TABLE content_variants
+  ADD COLUMN IF NOT EXISTS uml TEXT;

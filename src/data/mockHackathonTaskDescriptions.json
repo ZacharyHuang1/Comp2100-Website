@@ -1,0 +1,2916 @@
+{
+  "source": "mini_project_hackathon_task_catalog.pdf",
+  "generatedAt": "2026-05-05",
+  "entries": {
+    "DP01": {
+      "id": "DP01",
+      "task": "DAO for new entity",
+      "feature": "Encapsulate storage/access logic for every new model.",
+      "likelyHackathonTask": "Create DAO classes for Reaction, Community, Notification, Report, etc.",
+      "coreStructure": "DAO pattern",
+      "suggestedClasses": "ReactionDAO, CommunityDAO, NotificationDAO, ReportDAO",
+      "possibleApi": [
+        "getInstance()",
+        "add(T item)",
+        "get(T keyLikeItem)",
+        "getAll()",
+        "clear()"
+      ],
+      "testCases": [
+        "testAddAndGetEntity",
+        "testDuplicatePolicy",
+        "testGetAllIterator",
+        "testClearDAO",
+        "testDAOHidesDataStructure",
+        "testDAOWorksWithPersistence"
+      ],
+      "notes": "Current backend already has DAO<T>, UserDAO, and PostDAO."
+    },
+    "DP02": {
+      "id": "DP02",
+      "task": "Repository layer",
+      "feature": "Combine DAO, indexes, and persistence behind a richer interface.",
+      "likelyHackathonTask": "Repository coordinates multiple DAOs and indexes.",
+      "coreStructure": "Repository pattern / dependency inversion",
+      "suggestedClasses": "PostRepository, UserRepository",
+      "possibleApi": [
+        "save(Post post)",
+        "findById(UUID id)",
+        "findByKeyword(String q)",
+        "delete(UUID id)",
+        "rebuildIndexes()"
+      ],
+      "testCases": [
+        "testRepositorySavesToDAO",
+        "testRepositoryUpdatesIndex",
+        "testRepositoryDeleteUpdatesAllIndexes",
+        "testRepositoryCanUseFakeDAO",
+        "testFindMissingReturnsEmpty",
+        "testRebuildIndexes"
+      ],
+      "notes": "Useful when DAO alone becomes too low-level."
+    },
+    "DP03": {
+      "id": "DP03",
+      "task": "Singleton managers",
+      "feature": "Ensure single global instance for DAOs/managers.",
+      "likelyHackathonTask": "Apply singleton to managers where duplicate storage would break correctness.",
+      "coreStructure": "Singleton",
+      "suggestedClasses": "DataManager, UserDAO, PostDAO, StateManager, ReactionDAO",
+      "possibleApi": [
+        "private constructor",
+        "static getInstance()"
+      ],
+      "testCases": [
+        "testGetInstanceNonNull",
+        "testGetInstanceReturnsSameObject",
+        "testDataSharedBetweenReferences",
+        "testConstructorPrivateByReflection",
+        "testClearViaOneReferenceAffectsOther",
+        "testNoEagerDuplicate"
+      ],
+      "notes": "Already visible in current UserDAO/PostDAO/DataManager style."
+    },
+    "DP04": {
+      "id": "DP04",
+      "task": "Notification factory",
+      "feature": "Create different notification subclasses cleanly.",
+      "likelyHackathonTask": "Factory maps event type to Notification object.",
+      "coreStructure": "Factory Method",
+      "suggestedClasses": "NotificationFactory, ReplyNotification, MentionNotification,\nLikeNotification, AdminWarningNotification",
+      "possibleApi": [
+        "create(NotificationType type, Event event)",
+        "createReplyNotification(...)",
+        "createMentionNotification(...)"
+      ],
+      "testCases": [
+        "testReplyTypeCreatesReplyNotification",
+        "testMentionTypeCreatesMentionNotification",
+        "testUnknownTypeThrows",
+        "testFactoryFillsTargetId",
+        "testFactoryFillsRecipient",
+        "testFactoryDoesNotReturnNullForValidType"
+      ],
+      "notes": "Common if notifications are added."
+    },
+    "DP05": {
+      "id": "DP05",
+      "task": "SortedData factory extension",
+      "feature": "Switch between AVL, BST, sorted array, or B-tree.",
+      "likelyHackathonTask": "Factory creates implementation without changing DAO code.",
+      "coreStructure": "Factory Method",
+      "suggestedClasses": "SortedDataFactory, AVLTree, BSTree, SortedArrayList, BTreeIndex",
+      "possibleApi": [
+        "makeSortedData(Comparator<T> c)",
+        "makeSortedData(String implementation, Comparator<T> c)"
+      ],
+      "testCases": [
+        "testDefaultReturnsAVL",
+        "testBSTTypeReturnsBST",
+        "testArrayTypeReturnsSortedArrayList",
+        "testUnknownTypePolicy",
+        "testComparatorPassedThrough",
+        "testDAOWorksWithFactoryOutput"
+      ],
+      "notes": "Directly based on current SortedDataFactory."
+    },
+    "DP06": {
+      "id": "DP06",
+      "task": "Persistence abstract factory",
+      "feature": "Switch between CSV, JSON, XML formatted data.",
+      "likelyHackathonTask": "Create reader/writer families for the same format.",
+      "coreStructure": "Abstract Factory",
+      "suggestedClasses": "FormattedFactory, CSVFormattedFactory, JSONFormattedFactory,\nXMLFormattedFactory",
+      "possibleApi": [
+        "writer(Writer w)",
+        "reader(Reader r)"
+      ],
+      "testCases": [
+        "testCSVFactoryCreatesCSVReaderWriter",
+        "testJSONFactoryCreatesJSONReaderWriter",
+        "testFactoryRoundTrip",
+        "testUnknownFormatPolicy",
+        "testDataPipelineAcceptsAnyFactory",
+        "testNoBusinessCodeChangeForNewFormat"
+      ],
+      "notes": "Matches existing FormattedFactory structure."
+    },
+    "DP07": {
+      "id": "DP07",
+      "task": "Feed ranking strategy",
+      "feature": "Swap feed ordering rules.",
+      "likelyHackathonTask": "Encapsulate ranking algorithms.",
+      "coreStructure": "Strategy",
+      "suggestedClasses": "FeedRankingStrategy, NewestFirstStrategy, TopScoreStrategy, HotStrategy",
+      "possibleApi": [
+        "compare(Post a, Post b)",
+        "rank(Collection<Post> posts)"
+      ],
+      "testCases": [
+        "testNewestStrategy",
+        "testTopScoreStrategy",
+        "testHotStrategy",
+        "testSwitchingStrategyChangesOrder",
+        "testTieBreakerConsistent",
+        "testEmptyInput"
+      ],
+      "notes": "High-probability design-pattern task."
+    },
+    "DP08": {
+      "id": "DP08",
+      "task": "Search strategy",
+      "feature": "Support exact, prefix, any-word, all-word search.",
+      "likelyHackathonTask": "Encapsulate different search modes.",
+      "coreStructure": "Strategy",
+      "suggestedClasses": "SearchStrategy, ExactSearchStrategy, PrefixSearchStrategy,\nAnyWordSearchStrategy, AllWordsSearchStrategy",
+      "possibleApi": [
+        "search(String query, SearchIndex index)"
+      ],
+      "testCases": [
+        "testExactSearch",
+        "testPrefixSearch",
+        "testAnyWordSearch",
+        "testAllWordsSearch",
+        "testStrategyHandlesEmptyQuery",
+        "testSameIndexDifferentStrategies"
+      ],
+      "notes": "Pairs with DS01/DS34."
+    },
+    "DP09": {
+      "id": "DP09",
+      "task": "Feed filter strategy",
+      "feature": "Filter feed by blocks, community, muted topics, or deleted state.",
+      "likelyHackathonTask": "Each filter is a strategy or specification.",
+      "coreStructure": "Strategy / Specification",
+      "suggestedClasses": "FeedFilterStrategy, BlockedUserFilter, CommunityFilter, MutedTopicFilter,\nNotDeletedFilter",
+      "possibleApi": [
+        "isVisible(Post post, User viewer)",
+        "filter(Iterator<Post> posts, User viewer)"
+      ],
+      "testCases": [
+        "testBlockedUserFilter",
+        "testCommunityFilter",
+        "testMutedTopicFilter",
+        "testDeletedPostHidden",
+        "testMultipleFiltersCombined",
+        "testFilterDoesNotMutateInput"
+      ],
+      "notes": "Good with Decorator too."
+    },
+    "DP10": {
+      "id": "DP10",
+      "task": "Moderation priority strategy",
+      "feature": "Compute report priority differently by policy.",
+      "likelyHackathonTask": "Encapsulate severity rules.",
+      "coreStructure": "Strategy",
+      "suggestedClasses": "ModerationPriorityStrategy, SpamPriorityStrategy,\nHarassmentPriorityStrategy, DefaultPriorityStrategy",
+      "possibleApi": [
+        "priority(Report report)"
+      ],
+      "testCases": [
+        "testSpamPriority",
+        "testHarassmentHigherThanSpam",
+        "testDefaultPriority",
+        "testSwitchPolicyChangesQueueOrder",
+        "testNullReasonPolicy",
+        "testTieBreakerByTimestamp"
+      ],
+      "notes": "Pairs with report queue."
+    },
+    "DP11": {
+      "id": "DP11",
+      "task": "Observer notifications",
+      "feature": "Notify subscribers when posts receive replies/likes/mentions.",
+      "likelyHackathonTask": "Subject publishes events; observers create notifications.",
+      "coreStructure": "Observer",
+      "suggestedClasses": "EventSubject, NotificationObserver, PostEvent, MessageEvent",
+      "possibleApi": [
+        "attach(Observer o)",
+        "detach(Observer o)",
+        "notify(Event e)",
+        "update(Event e)"
+      ],
+      "testCases": [
+        "testAttachedObserverReceivesEvent",
+        "testDetachedObserverNotCalled",
+        "testMultipleObserversCalled",
+        "testObserverReceivesCorrectEventData",
+        "testNoObserversDoesNotCrash",
+        "testSelfReplyNoNotificationPolicy"
+      ],
+      "notes": "Very likely for chat/backend."
+    },
+    "DP12": {
+      "id": "DP12",
+      "task": "Observer trending analytics",
+      "feature": "Update trending indexes when content is added.",
+      "likelyHackathonTask": "Trending service listens to new post/message events.",
+      "coreStructure": "Observer",
+      "suggestedClasses": "TrendingObserver, KeywordTrendingObserver, HashtagTrendingObserver",
+      "possibleApi": [
+        "update(PostCreatedEvent e)",
+        "update(MessageCreatedEvent e)"
+      ],
+      "testCases": [
+        "testNewPostUpdatesTrendingWords",
+        "testNewMessageUpdatesHashtags",
+        "testDetachedTrendingObserverStopsUpdating",
+        "testMultipleEventsAccumulate",
+        "testInvalidEventIgnored",
+        "testObserverCalledOncePerEvent"
+      ],
+      "notes": "Data structure + pattern integration."
+    },
+    "DP13": {
+      "id": "DP13",
+      "task": "Observer live slice",
+      "feature": "Keep visible message window synchronized with sorted data.",
+      "likelyHackathonTask": "SortedDataSlice observes insertions and updates visible window.",
+      "coreStructure": "Observer",
+      "suggestedClasses": "SortedDataSubject, SortedDataSlice, MessageWindowObserver",
+      "possibleApi": [
+        "registerSlice(SortedDataSlice<T> slice)",
+        "onInsert(T element)",
+        "onDelete(T element)"
+      ],
+      "testCases": [
+        "testPinnedSliceUpdatesOnInsert",
+        "testUnpinnedSliceStableOnInsert",
+        "testDetachedSliceStopsUpdating",
+        "testInsertBeforeSliceBoundary",
+        "testInsertAfterSliceBoundary",
+        "testDeleteVisibleElement"
+      ],
+      "notes": "Directly related to current SortedDataSlice."
+    },
+    "DP14": {
+      "id": "DP14",
+      "task": "User permission state",
+      "feature": "User behaviour depends on Guest/Member/Admin/Banned/etc.",
+      "likelyHackathonTask": "Move permission checks into state objects.",
+      "coreStructure": "State",
+      "suggestedClasses": "GuestState, MemberState, AdminState, BannedState, MutedState",
+      "possibleApi": [
+        "canPost()",
+        "canReply()",
+        "canLike()",
+        "canModerate()",
+        "canSendDM()"
+      ],
+      "testCases": [
+        "testGuestCannotPost",
+        "testMemberCanPost",
+        "testAdminCanModerate",
+        "testBannedCannotLike",
+        "testMutedCannotReply",
+        "testStateTransitionLoginLogout"
+      ],
+      "notes": "Current userstate package already suggests this."
+    },
+    "DP15": {
+      "id": "DP15",
+      "task": "Post lifecycle state",
+      "feature": "Post behaviour depends on draft/published/locked/deleted/archived.",
+      "likelyHackathonTask": "State object controls allowed actions.",
+      "coreStructure": "State",
+      "suggestedClasses": "DraftPostState, PublishedPostState, LockedPostState, DeletedPostState,\nArchivedPostState",
+      "possibleApi": [
+        "canView(User u)",
+        "canReply(User u)",
+        "canEdit(User u)",
+        "canDelete(User u)",
+        "transitionTo(PostState s)"
+      ],
+      "testCases": [
+        "testDraftNotVisibleToOthers",
+        "testPublishedCanReceiveReplies",
+        "testLockedCannotReceiveReplies",
+        "testDeletedHiddenFromFeed",
+        "testAdminCanViewDeleted",
+        "testInvalidTransitionRejected"
+      ],
+      "notes": "Good Reddit moderation feature."
+    },
+    "DP16": {
+      "id": "DP16",
+      "task": "Report lifecycle state",
+      "feature": "Report moves through Open, UnderReview, Resolved, Dismissed.",
+      "likelyHackathonTask": "State controls valid transitions and operations.",
+      "coreStructure": "State",
+      "suggestedClasses": "OpenReportState, UnderReviewState, ResolvedReportState,\nDismissedReportState",
+      "possibleApi": [
+        "assign(Admin admin)",
+        "resolve()",
+        "dismiss()",
+        "reopen()",
+        "canEdit()"
+      ],
+      "testCases": [
+        "testOpenCanBeAssigned",
+        "testResolvedCannotBeResolvedAgain",
+        "testDismissedCanBeReopenedIfSpec",
+        "testInvalidTransitionRejected",
+        "testStatePersists",
+        "testStateControlsQueueVisibility"
+      ],
+      "notes": "Pairs with PD04."
+    },
+    "DP17": {
+      "id": "DP17",
+      "task": "Feed iterator",
+      "feature": "Traverse feed without exposing storage implementation.",
+      "likelyHackathonTask": "Iterator over posts from AVL/map/cache.",
+      "coreStructure": "Iterator",
+      "suggestedClasses": "FeedIterator, PostIterator",
+      "possibleApi": [
+        "hasNext()",
+        "next()"
+      ],
+      "testCases": [
+        "testIteratorOrder",
+        "testEmptyIterator",
+        "testNextAfterEndPolicy",
+        "testHasNextDoesNotAdvance",
+        "testIteratorOverFilteredFeed",
+        "testIteratorIndependentOfInternalCollection"
+      ],
+      "notes": "Iterator is already used in DAO and PostDAO."
+    },
+    "DP18": {
+      "id": "DP18",
+      "task": "Filtered iterator",
+      "feature": "Decorate or wrap an iterator to skip hidden items.",
+      "likelyHackathonTask": "Wrap an existing iterator and apply visibility predicate.",
+      "coreStructure": "Iterator / Decorator",
+      "suggestedClasses": "FilteredIterator<T>, VisibilityPredicate<T>",
+      "possibleApi": [
+        "hasNext()",
+        "next()"
+      ],
+      "testCases": [
+        "testFilterSkipsBlockedPosts",
+        "testFilterSkipsDeletedPosts",
+        "testAllFilteredOut",
+        "testNoItemsFiltered",
+        "testHasNextIdempotent",
+        "testUnderlyingIteratorNotExposed"
+      ],
+      "notes": "Good combination task."
+    },
+    "DP19": {
+      "id": "DP19",
+      "task": "Composite comment tree",
+      "feature": "Treat post thread and comment nodes uniformly as containers.",
+      "likelyHackathonTask": "Composite nodes can contain child comments.",
+      "coreStructure": "Composite",
+      "suggestedClasses": "CommentComponent, CommentLeaf, CommentComposite, PostThreadComposite",
+      "possibleApi": [
+        "add(CommentComponent child)",
+        "remove(CommentComponent child)",
+        "children()",
+        "render()",
+        "size()"
+      ],
+      "testCases": [
+        "testLeafHasNoChildren",
+        "testCompositeContainsChildren",
+        "testNestedCompositeSize",
+        "testRemoveChild",
+        "testRenderThreadOrder",
+        "testParentNotRequiredByClient"
+      ],
+      "notes": "Excellent for nested replies."
+    },
+    "DP20": {
+      "id": "DP20",
+      "task": "Moderation command",
+      "feature": "Represent delete/ban/lock/resolve as commands.",
+      "likelyHackathonTask": "Command object can execute and undo.",
+      "coreStructure": "Command",
+      "suggestedClasses": "ModerationCommand, DeletePostCommand, BanUserCommand, LockThreadCommand",
+      "possibleApi": [
+        "execute()",
+        "undo()",
+        "description()"
+      ],
+      "testCases": [
+        "testDeleteCommandExecutes",
+        "testDeleteCommandUndoRestores",
+        "testBanCommandExecutes",
+        "testUndoStackUsesLIFO",
+        "testCommandRecordsModerator",
+        "testFailedCommandNotPushedToUndo"
+      ],
+      "notes": "Pairs with DS23."
+    },
+    "DP21": {
+      "id": "DP21",
+      "task": "Edit command",
+      "feature": "Represent edit/revert operations as commands.",
+      "likelyHackathonTask": "Command allows undo/redo of text edits.",
+      "coreStructure": "Command",
+      "suggestedClasses": "EditMessageCommand, EditPostCommand, UndoManager",
+      "possibleApi": [
+        "execute()",
+        "undo()",
+        "redo()"
+      ],
+      "testCases": [
+        "testEditCommandChangesText",
+        "testUndoRestoresOldText",
+        "testRedoReappliesText",
+        "testMultipleEditsUndoInOrder",
+        "testEditMissingTargetPolicy",
+        "testCommandStoresTimestamp"
+      ],
+      "notes": "Useful for edit history."
+    },
+    "DP22": {
+      "id": "DP22",
+      "task": "Message renderer decorator",
+      "feature": "Add markdown, mention highlight, or profanity filter.",
+      "likelyHackathonTask": "Decorators wrap base renderer.",
+      "coreStructure": "Decorator",
+      "suggestedClasses": "MessageRenderer, BaseRenderer, MarkdownDecorator,\nMentionHighlightDecorator, ProfanityFilterDecorator",
+      "possibleApi": [
+        "render(Message m)"
+      ],
+      "testCases": [
+        "testBaseRendererReturnsPlainText",
+        "testMarkdownDecorator",
+        "testMentionDecorator",
+        "testProfanityDecorator",
+        "testDecoratorsCanBeStacked",
+        "testDecoratorOrderDefined"
+      ],
+      "notes": "A readable pattern task."
+    },
+    "DP23": {
+      "id": "DP23",
+      "task": "Feed filter decorator",
+      "feature": "Wrap feed provider to add filters dynamically.",
+      "likelyHackathonTask": "Decorators add blocked user, muted topic, and deleted filters.",
+      "coreStructure": "Decorator",
+      "suggestedClasses": "FeedProvider, BaseFeedProvider, BlockFilterDecorator, MuteFilterDecorator",
+      "possibleApi": [
+        "getFeed(User viewer)"
+      ],
+      "testCases": [
+        "testBaseFeedReturnsAll",
+        "testBlockDecoratorHidesBlocked",
+        "testMuteDecoratorHidesMutedTopics",
+        "testStackedDecorators",
+        "testOriginalProviderUnchanged",
+        "testEmptyFeed"
+      ],
+      "notes": "Alternative to Strategy filtering."
+    },
+    "DP24": {
+      "id": "DP24",
+      "task": "Backend facade",
+      "feature": "Expose simple API for UI/client code.",
+      "likelyHackathonTask": "Hide DAOs, indexes, DataManager, and state transitions behind one class.",
+      "coreStructure": "Facade",
+      "suggestedClasses": "BackendFacade, ForumService, ChatService",
+      "possibleApi": [
+        "register(...)",
+        "login(...)",
+        "createPost(...)",
+        "reply(...)",
+        "search(...)",
+        "saveAll()",
+        "loadAll()"
+      ],
+      "testCases": [
+        "testFacadeRegisterAndLogin",
+        "testFacadeCreatePost",
+        "testFacadeReplyCreatesMessage",
+        "testFacadeSearchUsesIndex",
+        "testFacadeSaveLoadRoundTrip",
+        "testFacadeEnforcesPermissions"
+      ],
+      "notes": "Very likely for a backend mini project."
+    },
+    "DP25": {
+      "id": "DP25",
+      "task": "Legacy CSV adapter",
+      "feature": "Adapt old saved-row schemas to current models.",
+      "likelyHackathonTask": "Adapter converts legacy data to current serializer format.",
+      "coreStructure": "Adapter",
+      "suggestedClasses": "LegacyPostAdapter, LegacyUserAdapter",
+      "possibleApi": [
+        "fromLegacyRow(String[] row)",
+        "toCurrentObject()"
+      ],
+      "testCases": [
+        "testLegacyPostConverted",
+        "testLegacyMissingFieldDefaulted",
+        "testInvalidLegacyRowThrows",
+        "testAdapterPreservesId",
+        "testAdapterEscapedText",
+        "testCurrentSerializerUnaffected"
+      ],
+      "notes": "Pairs with migration tasks."
+    },
+    "DP26": {
+      "id": "DP26",
+      "task": "Formatted data adapter",
+      "feature": "Adapt JSON/XML objects to DataPipeline serializer type.",
+      "likelyHackathonTask": "Adapter makes different document formats look like common rows.",
+      "coreStructure": "Adapter",
+      "suggestedClasses": "JsonRowAdapter, XmlRowAdapter, FormattedDataAdapter",
+      "possibleApi": [
+        "toRow(JsonObject obj)",
+        "toJson(String[] row)",
+        "toRow(XmlElement e)"
+      ],
+      "testCases": [
+        "testJsonToRow",
+        "testRowToJson",
+        "testXmlToRow",
+        "testSpecialCharacters",
+        "testMissingFieldPolicy",
+        "testDataPipelineUsesAdapter"
+      ],
+      "notes": "Useful if FormattedFactory changes."
+    },
+    "DP27": {
+      "id": "DP27",
+      "task": "Post builder",
+      "feature": "Build complex posts with optional fields safely.",
+      "likelyHackathonTask": "Builder avoids huge constructors.",
+      "coreStructure": "Builder",
+      "suggestedClasses": "PostBuilder, MessageBuilder",
+      "possibleApi": [
+        "withPoster(UUID poster)",
+        "withTopic(String topic)",
+        "withCommunity(String community)",
+        "withBody(String body)",
+        "build()"
+      ],
+      "testCases": [
+        "testBuildMinimalPost",
+        "testBuildPostWithCommunity",
+        "testMissingRequiredPosterRejected",
+        "testMissingTopicRejected",
+        "testBuilderReusablePolicy",
+        "testDefaultTimestampSet"
+      ],
+      "notes": "Good if Post gains many fields."
+    },
+    "DP28": {
+      "id": "DP28",
+      "task": "Abstract serializer template",
+      "feature": "Share validation/parse skeleton across serializers.",
+      "likelyHackathonTask": "Template method handles common serialize/deserialize steps.",
+      "coreStructure": "Template Method",
+      "suggestedClasses": "AbstractCSVSerializer<T>",
+      "possibleApi": [
+        "columnCount()",
+        "serializeFields(T obj)",
+        "deserializeFields(String[] fields)",
+        "validate(String[] fields)"
+      ],
+      "testCases": [
+        "testTemplateChecksColumnCount",
+        "testSubclassSerializesFields",
+        "testSubclassDeserializesFields",
+        "testValidationCalledBeforeParsing",
+        "testBadUUIDThrowsConsistently",
+        "testSerializerDocumentationColumns"
+      ],
+      "notes": "Reduces duplicated serializer code."
+    },
+    "DP29": {
+      "id": "DP29",
+      "task": "Cached DAO proxy",
+      "feature": "Add caching/lazy loading around DAO.",
+      "likelyHackathonTask": "Proxy controls access and caches results.",
+      "coreStructure": "Proxy",
+      "suggestedClasses": "CachedPostDAO, LazyLoadingDAOProxy",
+      "possibleApi": [
+        "get(T key)",
+        "add(T item)",
+        "clearCache()",
+        "cacheSize()"
+      ],
+      "testCases": [
+        "testCacheHitReturnsSameLogicalPost",
+        "testCacheMissDelegatesToDAO",
+        "testAddInvalidatesCache",
+        "testClearCache",
+        "testProxyDoesNotChangeDAOBehaviour",
+        "testLazyLoadOnlyOnFirstAccess"
+      ],
+      "notes": "Performance-oriented pattern."
+    },
+    "DP30": {
+      "id": "DP30",
+      "task": "Null object for empty user/post",
+      "feature": "Avoid null checks for unauthenticated or missing entities.",
+      "likelyHackathonTask": "Return safe null-object instead of Java null where appropriate.",
+      "coreStructure": "Null Object",
+      "suggestedClasses": "AnonymousUser, NullPost, EmptyNotificationQueue",
+      "possibleApi": [
+        "isAnonymous()",
+        "canPost()",
+        "getUsername()"
+      ],
+      "testCases": [
+        "testAnonymousUserCannotPost",
+        "testAnonymousUsernameGuest",
+        "testNullObjectNotNull",
+        "testNullPostHiddenFromFeed",
+        "testNullObjectDoesNotPersist",
+        "testClientAvoidsNullCheck"
+      ],
+      "notes": "Use carefully: course tests may expect null in existing APIs."
+    },
+    "DP31": {
+      "id": "DP31",
+      "task": "Moderation chain of responsibility",
+      "feature": "Run content through validation/moderation handlers.",
+      "likelyHackathonTask": "Each handler either passes, flags, or rejects.",
+      "coreStructure": "Chain of Responsibility",
+      "suggestedClasses": "ProfanityHandler, SpamHandler, LinkSafetyHandler, RateLimitHandler",
+      "possibleApi": [
+        "setNext(Handler h)",
+        "handle(Content c)"
+      ],
+      "testCases": [
+        "testProfanityHandlerFlags",
+        "testSpamHandlerRejectsDuplicate",
+        "testChainStopsOnReject",
+        "testChainPassesCleanContent",
+        "testHandlerOrderMatters",
+        "testNullContentPolicy"
+      ],
+      "notes": "Good for posting pipeline."
+    },
+    "DP32": {
+      "id": "DP32",
+      "task": "Memento for edit history",
+      "feature": "Capture previous object state for restore.",
+      "likelyHackathonTask": "Save snapshots of post/message text before mutation.",
+      "coreStructure": "Memento",
+      "suggestedClasses": "PostMemento, MessageMemento, HistoryCaretaker",
+      "possibleApi": [
+        "save(Post p)",
+        "restore(Post p, PostMemento m)",
+        "history(UUID targetId)"
+      ],
+      "testCases": [
+        "testSaveMemento",
+        "testRestoreOldContent",
+        "testMultipleMementos",
+        "testMementoImmutable",
+        "testHistorySeparatedByTarget",
+        "testPersistMementoIfRequired"
+      ],
+      "notes": "Alternative to Command for undo."
+    },
+    "DP33": {
+      "id": "DP33",
+      "task": "Visitor for analytics",
+      "feature": "Run analytics over posts/messages/comments without changing model classes.",
+      "likelyHackathonTask": "Visitor calculates word count, mention count, or score summary.",
+      "coreStructure": "Visitor",
+      "suggestedClasses": "ContentVisitor, WordCountVisitor, MentionCountVisitor, ScoreVisitor",
+      "possibleApi": [
+        "visit(Post p)",
+        "visit(Message m)",
+        "result()"
+      ],
+      "testCases": [
+        "testWordCountVisitorPost",
+        "testWordCountVisitorMessage",
+        "testMentionVisitor",
+        "testVisitorOverCommentTree",
+        "testAddingVisitorDoesNotModifyModels",
+        "testEmptyContentResult"
+      ],
+      "notes": "More advanced but possible."
+    },
+    "DP34": {
+      "id": "DP34",
+      "task": "Flyweight notification templates",
+      "feature": "Reuse immutable notification templates.",
+      "likelyHackathonTask": "Store shared type/message template objects.",
+      "coreStructure": "Flyweight",
+      "suggestedClasses": "NotificationTemplateFactory, NotificationTemplate",
+      "possibleApi": [
+        "getTemplate(NotificationType type)",
+        "format(NotificationEvent e)"
+      ],
+      "testCases": [
+        "testSameTypeReturnsSameTemplate",
+        "testDifferentTypesDifferentTemplates",
+        "testTemplateIsImmutable",
+        "testFormattedMessageUsesEventData",
+        "testUnknownTypePolicy",
+        "testMemoryFriendlyManyNotifications"
+      ],
+      "notes": "Less likely but useful for many notifications."
+    },
+    "DP35": {
+      "id": "DP35",
+      "task": "Prototype seed data cloning",
+      "feature": "Clone template users/posts for generated demo data.",
+      "likelyHackathonTask": "Prototype creates test/demo objects from templates.",
+      "coreStructure": "Prototype",
+      "suggestedClasses": "PostPrototype, UserPrototype, SeedDataFactory",
+      "possibleApi": [
+        "cloneWithNewId()",
+        "cloneWithAuthor(UUID userId)"
+      ],
+      "testCases": [
+        "testCloneHasDifferentId",
+        "testCloneCopiesTopic",
+        "testCloneCanChangeAuthor",
+        "testOriginalUnchanged",
+        "testDeepCopyMessages",
+        "testPrototypeUsedBySeedFactory"
+      ],
+      "notes": "Useful with RandomContentGenerator-like code."
+    },
+    "DP36": {
+      "id": "DP36",
+      "task": "Dependency inversion for services",
+      "feature": "Services depend on interfaces, not concrete DAOs.",
+      "likelyHackathonTask": "Inject DAO/index interfaces for testability.",
+      "coreStructure": "Dependency Inversion",
+      "suggestedClasses": "PostStore interface, InMemoryPostStore, FileBackedPostStore, PostService",
+      "possibleApi": [
+        "PostService(PostStore store, SearchIndex index)",
+        "createPost(...)",
+        "findPost(...)"
+      ],
+      "testCases": [
+        "testServiceWithFakeStore",
+        "testServiceDoesNotNewConcreteDAO",
+        "testFakeStoreRecordsCall",
+        "testErrorStoreHandled",
+        "testSwappableImplementation",
+        "testConstructorRejectsNullDependency"
+      ],
+      "notes": "Very useful for software testing."
+    },
+    "DP37": {
+      "id": "DP37",
+      "task": "Bridge persistence backend",
+      "feature": "Separate domain objects from storage implementation.",
+      "likelyHackathonTask": "Abstraction is DataStore; implementation is CSV/JSON/XML.",
+      "coreStructure": "Bridge",
+      "suggestedClasses": "DataStore, StorageBackend, CSVBackend, JSONBackend",
+      "possibleApi": [
+        "save(Entity e)",
+        "loadAll(EntityType type)"
+      ],
+      "testCases": [
+        "testCSVBackend",
+        "testJSONBackend",
+        "testSameServiceWorksWithBoth",
+        "testBridgeDoesNotChangeModel",
+        "testBackendFailureHandled",
+        "testSwitchBackendAtConstruction"
+      ],
+      "notes": "Similar to Abstract Factory but service-facing."
+    },
+    "DP38": {
+      "id": "DP38",
+      "task": "Specification for validation",
+      "feature": "Represent validation rules as reusable objects.",
+      "likelyHackathonTask": "Compose username/password/post validity checks.",
+      "coreStructure": "Specification pattern",
+      "suggestedClasses": "Specification<T>, UsernameSpec, PasswordSpec, PostContentSpec",
+      "possibleApi": [
+        "isSatisfiedBy(T item)",
+        "and(Specification<T> other)",
+        "or(Specification<T> other)"
+      ],
+      "testCases": [
+        "testUsernameSpecValid",
+        "testUsernameSpecInvalidChars",
+        "testPasswordSpecTooShort",
+        "testAndComposition",
+        "testOrComposition",
+        "testPostContentSpecEmpty"
+      ],
+      "notes": "Good for replacing hard-coded if statements."
+    },
+    "DP39": {
+      "id": "DP39",
+      "task": "Audit observer plus command",
+      "feature": "Every command execution emits an audit event.",
+      "likelyHackathonTask": "Combine Command and Observer for audit logging.",
+      "coreStructure": "Command + Observer",
+      "suggestedClasses": "AuditedCommand, AuditObserver, EventBus",
+      "possibleApi": [
+        "execute()",
+        "undo()",
+        "notify(AuditEvent e)"
+      ],
+      "testCases": [
+        "testExecuteEmitsAuditEvent",
+        "testUndoEmitsAuditEvent",
+        "testFailedCommandDoesNotEmitSuccess",
+        "testObserverDetachedNoAudit",
+        "testAuditContainsModeratorAndTarget",
+        "testMultipleObservers"
+      ],
+      "notes": "Good advanced integration task."
+    },
+    "DP40": {
+      "id": "DP40",
+      "task": "Service-layer facade with state checks",
+      "feature": "Single service coordinates state, DAO, indexes, and persistence.",
+      "likelyHackathonTask": "Facade checks permissions and delegates work.",
+      "coreStructure": "Facade + State + DAO",
+      "suggestedClasses": "MiniProjectBackend, PermissionService, PostService",
+      "possibleApi": [
+        "createPost(User actor, String topic)",
+        "reply(User actor, UUID postId, String text)",
+        "deletePost(User actor, UUID postId)",
+        "saveAll()"
+      ],
+      "testCases": [
+        "testGuestCreatePostDenied",
+        "testMemberCreatePostAllowed",
+        "testAdminDeleteAllowed",
+        "testReplyUpdatesPostAndIndex",
+        "testSaveAllCalledThroughFacade",
+        "testFacadeKeepsInvariants"
+      ],
+      "notes": "Most practical design-pattern task for hackathon."
+    },
+    "DS01": {
+      "id": "DS01",
+      "task": "Post keyword inverted index",
+      "feature": "Search posts by words in topic/title/body without scanning every post.",
+      "likelyHackathonTask": "Build an index that maps each normalized token to the posts containing it.",
+      "coreStructure": "HashMap<String, Set<UUID>, HashSet, optional SortedData<Post> for ordered results",
+      "suggestedClasses": "PostKeywordIndex, Tokeniser, SearchResult",
+      "possibleApi": [
+        "add(Post post)",
+        "remove(Post post)",
+        "search(String keyword)",
+        "searchAll(Collection<String> keywords)",
+        "frequency(String keyword)"
+      ],
+      "testCases": [
+        "testEmptyIndexReturnsEmptyList",
+        "testCaseInsensitiveSearch",
+        "testPunctuationIsIgnored",
+        "testDuplicateWordDoesNotDuplicatePost",
+        "testRemovePostUpdatesAllTokens",
+        "testSearchAllReturnsIntersection",
+        "testUnknownKeywordReturnsEmpty"
+      ],
+      "notes": "Very likely because current Post has a topic but no search feature."
+    },
+    "DS02": {
+      "id": "DS02",
+      "task": "Message keyword inverted index",
+      "feature": "Search comments/messages inside threads.",
+      "likelyHackathonTask": "Index message content and allow global or per-thread search.",
+      "coreStructure": "Map<String, Set<UUID>, Map<UUID, SortedData<Message>",
+      "suggestedClasses": "MessageKeywordIndex, MessageTokeniser",
+      "possibleApi": [
+        "add(Message message)",
+        "remove(Message message)",
+        "search(String keyword)",
+        "searchInThread(UUID threadId, String keyword)"
+      ],
+      "testCases": [
+        "testMessageSearchFindsCorrectMessage",
+        "testSearchInThreadFiltersOtherThreads",
+        "testRemoveMessageUpdatesIndex",
+        "testEmptyMessageIgnored",
+        "testRepeatedWordsHandledOnce",
+        "testNullKeywordHandledSafely"
+      ],
+      "notes": "Good extension of PostDAO.getAllMessages()."
+    },
+    "DS03": {
+      "id": "DS03",
+      "task": "Hashtag index",
+      "feature": "Find posts/messages tagged with hashtags such as #java or #comp2100.",
+      "likelyHackathonTask": "Extract hashtags and map each tag to matching posts/messages.",
+      "coreStructure": "Map<String, Set<UUID>, Map<String, Integer>, PriorityQueue for trending tags",
+      "suggestedClasses": "HashtagIndex, HashtagParser",
+      "possibleApi": [
+        "addPost(Post post)",
+        "addMessage(Message message)",
+        "getPosts(String hashtag)",
+        "getMessages(String hashtag)",
+        "getTrendingHashtags(int n)"
+      ],
+      "testCases": [
+        "testSingleHashtagIndexed",
+        "testMultipleHashtagsInOnePost",
+        "testCaseInsensitiveTags",
+        "testInvalidHashtagIgnored",
+        "testDuplicateHashtagInSamePost",
+        "testTrendingHashtagsOrderedByFrequency"
+      ],
+      "notes": "Often paired with persistent hashtag snapshots."
+    },
+    "DS04": {
+      "id": "DS04",
+      "task": "Mention index",
+      "feature": "Track @username mentions in posts/messages.",
+      "likelyHackathonTask": "Map mentioned username or userId to all mentioning content.",
+      "coreStructure": "Map<String, Set<UUID>, Map<UUID, Set<UUID>",
+      "suggestedClasses": "MentionIndex, MentionParser",
+      "possibleApi": [
+        "addPost(Post post)",
+        "addMessage(Message message)",
+        "getMentionsOf(String username)",
+        "mentionCount(String username)"
+      ],
+      "testCases": [
+        "testMentionIsDetected",
+        "testUnknownMentionDoesNotCrash",
+        "testMultipleMentionsDetected",
+        "testDuplicateMentionCountsOncePerMessage",
+        "testSelfMentionAllowedOrRejectedBySpec",
+        "testMentionCaseRules"
+      ],
+      "notes": "Can drive notifications through Observer."
+    },
+    "DS05": {
+      "id": "DS05",
+      "task": "User-to-post index",
+      "feature": "Show all posts written by one user on a profile page.",
+      "likelyHackathonTask": "Maintain a mapping from userId to the user’s posts.",
+      "coreStructure": "Map<UUID, SortedData<Post> or Map<UUID, List<Post>",
+      "suggestedClasses": "UserPostIndex",
+      "possibleApi": [
+        "add(Post post)",
+        "remove(Post post)",
+        "getPostsByUser(UUID userId)",
+        "countPostsByUser(UUID userId)",
+        "topUsersByPostCount(int n)"
+      ],
+      "testCases": [
+        "testUnknownUserHasNoPosts",
+        "testMultiplePostsBySameUser",
+        "testDifferentUsersSeparated",
+        "testRemovePostReducesCount",
+        "testReturnedCollectionCannotMutateInternalState",
+        "testTopUsersByPostCount"
+      ],
+      "notes": "Useful with UserDAO and PostDAO."
+    },
+    "DS06": {
+      "id": "DS06",
+      "task": "User-to-message index",
+      "feature": "Show all comments/messages by one user.",
+      "likelyHackathonTask": "Group messages by poster id.",
+      "coreStructure": "Map<UUID, SortedData<Message>",
+      "suggestedClasses": "UserMessageIndex",
+      "possibleApi": [
+        "add(Message message)",
+        "remove(Message message)",
+        "getMessagesByUser(UUID userId)",
+        "countMessagesByUser(UUID userId)"
+      ],
+      "testCases": [
+        "testUserMessagesReturned",
+        "testMessagesSortedByTimestamp",
+        "testDifferentUsersSeparated",
+        "testRemoveMessage",
+        "testUnknownUserReturnsEmpty",
+        "testLargeUserMessageSetTimeout"
+      ],
+      "notes": "Can be rebuilt from all posts/messages."
+    },
+    "DS07": {
+      "id": "DS07",
+      "task": "Post timestamp AVL index",
+      "feature": "Get newest, oldest, and range of posts by creation time.",
+      "likelyHackathonTask": "Use balanced sorted storage keyed by timestamp and postId.",
+      "coreStructure": "AVLTree<Post>, Comparator<Post>",
+      "suggestedClasses": "PostTimeIndex, PostTimeComparator",
+      "possibleApi": [
+        "insert(Post post)",
+        "delete(UUID postId)",
+        "newest()",
+        "oldest()",
+        "range(long from, long to)",
+        "getAtIndex(int i)"
+      ],
+      "testCases": [
+        "testNewestAndOldest",
+        "testRangeIncludesBoundaries",
+        "testRangeEmpty",
+        "testDuplicateTimestampTieBrokenById",
+        "testDeleteLeafPost",
+        "testDeletePostWithChildren",
+        "testAscendingInsertionsRemainEfficient"
+      ],
+      "notes": "Very likely because SortedData/AVL already exist."
+    },
+    "DS08": {
+      "id": "DS08",
+      "task": "Message timestamp AVL index",
+      "feature": "Keep messages in chronological order for a thread.",
+      "likelyHackathonTask": "Use SortedData<Message> to store messages by timestamp/thread/poster/id.",
+      "coreStructure": "AVLTree<Message>, SortedDataSlice<Message>",
+      "suggestedClasses": "ThreadMessageIndex",
+      "possibleApi": [
+        "add(Message message)",
+        "getLatest(int n)",
+        "range(long from, long to)",
+        "slice(Message start, int count)",
+        "delete(UUID messageId)"
+      ],
+      "testCases": [
+        "testLatestMessagesOrdered",
+        "testRangeQueryByTime",
+        "testSameTimestampTieBreaker",
+        "testDeleteMessage",
+        "testSliceFromMiddle",
+        "testThreadIsolation"
+      ],
+      "notes": "Builds directly on current MessageComparator."
+    },
+    "DS09": {
+      "id": "DS09",
+      "task": "Post score AVL index",
+      "feature": "Maintain posts sorted by votes/replies/activity score.",
+      "likelyHackathonTask": "Remove and reinsert when a score changes to preserve ordering.",
+      "coreStructure": "AVLTree<PostScore>, Map<UUID, PostScore>",
+      "suggestedClasses": "PostScoreIndex, PostScore",
+      "possibleApi": [
+        "addPost(Post post)",
+        "updateScore(UUID postId, int score)",
+        "getTop(int n)",
+        "getRank(UUID postId)",
+        "removePost(UUID postId)"
+      ],
+      "testCases": [
+        "testTopPostHighestScore",
+        "testScoreUpdateChangesRank",
+        "testTieBrokenByTimestampAndId",
+        "testRemovePostFromRanking",
+        "testNegativeScoresAllowed",
+        "testTopLargerThanSizeReturnsAll"
+      ],
+      "notes": "A common ranking task."
+    },
+    "DS10": {
+      "id": "DS10",
+      "task": "Trending post heap",
+      "feature": "Return top N active posts efficiently.",
+      "likelyHackathonTask": "Use a priority queue for quick top retrieval; handle score updates carefully.",
+      "coreStructure": "PriorityQueue<PostScore>, Map<UUID, PostScore>",
+      "suggestedClasses": "TrendingPostHeap",
+      "possibleApi": [
+        "recordReply(UUID postId)",
+        "recordLike(UUID postId)",
+        "updateScore(UUID postId, int newScore)",
+        "peekTop()",
+        "topN(int n)"
+      ],
+      "testCases": [
+        "testPeekTopDoesNotRemove",
+        "testTopNRemovesOrCopiesBySpec",
+        "testScoreIncreaseMovesPostUp",
+        "testScoreTieOrderStable",
+        "testUnknownPostIgnoredOrThrows",
+        "testHeapHandlesManyPosts"
+      ],
+      "notes": "If Java PriorityQueue is used, score update often means remove + reinsert."
+    },
+    "DS11": {
+      "id": "DS11",
+      "task": "User karma leaderboard",
+      "feature": "Rank users by reputation or karma.",
+      "likelyHackathonTask": "Map users to scores and maintain a sorted leaderboard.",
+      "coreStructure": "Map<UUID,Integer>, AVLTree<UserScore>",
+      "suggestedClasses": "UserKarmaIndex, UserScore",
+      "possibleApi": [
+        "addUser(User user)",
+        "addKarma(UUID userId, int delta)",
+        "getKarma(UUID userId)",
+        "topUsers(int n)",
+        "rankOf(UUID userId)"
+      ],
+      "testCases": [
+        "testInitialKarmaZero",
+        "testAddKarma",
+        "testNegativeKarma",
+        "testTopUsersSorted",
+        "testRankChangesAfterUpdate",
+        "testSameScoreTieBreaker"
+      ],
+      "notes": "Pairs well with reactions/votes."
+    },
+    "DS12": {
+      "id": "DS12",
+      "task": "Reaction index",
+      "feature": "Track likes/upvotes/downvotes per target.",
+      "likelyHackathonTask": "Prevent duplicate reaction by same user and support reaction type changes.",
+      "coreStructure": "Map<UUID, Map<ReactionType, Set<UUID>>, Set<UUID>",
+      "suggestedClasses": "ReactionIndex, ReactionType",
+      "possibleApi": [
+        "react(UUID userId, UUID targetId, ReactionType type)",
+        "unreact(UUID userId, UUID targetId)",
+        "count(UUID targetId, ReactionType type)",
+        "hasReacted(UUID userId, UUID targetId)"
+      ],
+      "testCases": [
+        "testFirstLikeIncreasesCount",
+        "testDuplicateLikeNotDoubleCounted",
+        "testChangeReactionType",
+        "testUnreactRemovesUser",
+        "testSeparateTargetsIndependent",
+        "testNullReactionRejected"
+      ],
+      "notes": "This is a classic HashMap/HashSet task."
+    },
+    "DS13": {
+      "id": "DS13",
+      "task": "Vote index with score deltas",
+      "feature": "Track +1/-1 votes on posts/messages.",
+      "likelyHackathonTask": "Keep one vote per user per target and compute score efficiently.",
+      "coreStructure": "Map<TargetId, Map<UserId, Integer>, Map<TargetId,Integer>",
+      "suggestedClasses": "VoteIndex, VoteValue",
+      "possibleApi": [
+        "upvote(UUID userId, UUID targetId)",
+        "downvote(UUID userId, UUID targetId)",
+        "clearVote(UUID userId, UUID targetId)",
+        "score(UUID targetId)"
+      ],
+      "testCases": [
+        "testUpvoteScoreOne",
+        "testDownvoteScoreMinusOne",
+        "testDuplicateUpvoteNoDoubleCount",
+        "testSwitchUpvoteToDownvoteChangesByMinusTwo",
+        "testClearVoteRestoresScore",
+        "testUnknownTargetPolicy"
+      ],
+      "notes": "Likely for Reddit-like backend."
+    },
+    "DS14": {
+      "id": "DS14",
+      "task": "Saved posts index",
+      "feature": "Let users bookmark posts.",
+      "likelyHackathonTask": "Map each user to a set of saved post ids.",
+      "coreStructure": "Map<UUID, Set<UUID>, optional SortedData<SavedPost>",
+      "suggestedClasses": "SavedPostIndex",
+      "possibleApi": [
+        "save(UUID userId, UUID postId)",
+        "unsave(UUID userId, UUID postId)",
+        "isSaved(UUID userId, UUID postId)",
+        "getSavedPosts(UUID userId)"
+      ],
+      "testCases": [
+        "testSavePost",
+        "testSaveDuplicateIgnored",
+        "testUnsavePost",
+        "testUnsaveMissingPost",
+        "testDifferentUsersHaveSeparateSavedPosts",
+        "testGetSavedPostsDoesNotExposeInternalSet"
+      ],
+      "notes": "Simple and very testable."
+    },
+    "DS15": {
+      "id": "DS15",
+      "task": "Block and mute index",
+      "feature": "Hide content from blocked or muted users.",
+      "likelyHackathonTask": "Map blocker to blocked users and muted topics.",
+      "coreStructure": "Map<UUID, Set<UUID>, Map<UUID, Set<String>",
+      "suggestedClasses": "BlockMuteIndex, ContentFilter",
+      "possibleApi": [
+        "block(UUID blocker, UUID blocked)",
+        "unblock(UUID blocker, UUID blocked)",
+        "isBlocked(UUID viewer, UUID author)",
+        "muteTopic(UUID user, String topic)",
+        "filterVisiblePosts(UUID viewer, Iterator<Post> posts)"
+      ],
+      "testCases": [
+        "testBlockUser",
+        "testSelfBlockRejected",
+        "testDuplicateBlockIgnored",
+        "testUnblockUser",
+        "testBlockedContentFiltered",
+        "testMuteTopicFiltersPosts",
+        "testFilterDoesNotMutateSource"
+      ],
+      "notes": "Can combine with Decorator/Strategy patterns."
+    },
+    "DS16": {
+      "id": "DS16",
+      "task": "Follow graph",
+      "feature": "Represent user follow relationships.",
+      "likelyHackathonTask": "Directed graph where follower -> followee.",
+      "coreStructure": "Map<UUID, Set<UUID>, adjacency list",
+      "suggestedClasses": "FollowGraph",
+      "possibleApi": [
+        "follow(UUID follower, UUID followee)",
+        "unfollow(UUID follower, UUID followee)",
+        "getFollowing(UUID userId)",
+        "getFollowers(UUID userId)",
+        "isFollowing(UUID a, UUID b)"
+      ],
+      "testCases": [
+        "testFollowCreatesDirectedEdge",
+        "testSelfFollowRejected",
+        "testDuplicateFollowRejected",
+        "testUnfollowRemovesEdge",
+        "testFollowersInverseOfFollowing",
+        "testUnknownUserReturnsEmptySet"
+      ],
+      "notes": "Most likely graph task."
+    },
+    "DS17": {
+      "id": "DS17",
+      "task": "Mutual follow recommender",
+      "feature": "Suggest users based on follow graph.",
+      "likelyHackathonTask": "Compute candidates followed by people I follow.",
+      "coreStructure": "Graph traversal, Set intersection, PriorityQueue for ranking",
+      "suggestedClasses": "FollowRecommender",
+      "possibleApi": [
+        "suggestUsers(UUID userId, int limit)",
+        "mutualCount(UUID a, UUID b)",
+        "commonFollowing(UUID a, UUID b)"
+      ],
+      "testCases": [
+        "testFriendOfFriendSuggested",
+        "testAlreadyFollowedNotSuggested",
+        "testSelfNotSuggested",
+        "testMutualCount",
+        "testLimitRespected",
+        "testCyclesDoNotLoopForever"
+      ],
+      "notes": "Good BFS/graph traversal extension."
+    },
+    "DS18": {
+      "id": "DS18",
+      "task": "Community membership index",
+      "feature": "Track which users belong to each community.",
+      "likelyHackathonTask": "Map community id/name to member ids and roles.",
+      "coreStructure": "Map<String, Set<UUID>, Map<String, Map<UUID, Role>",
+      "suggestedClasses": "CommunityMembershipIndex",
+      "possibleApi": [
+        "join(UUID userId, String community)",
+        "leave(UUID userId, String community)",
+        "isMember(UUID userId, String community)",
+        "members(String community)",
+        "roleOf(UUID userId, String community)"
+      ],
+      "testCases": [
+        "testJoinCommunity",
+        "testDuplicateJoinIgnored",
+        "testLeaveCommunity",
+        "testLeaveNonMember",
+        "testCaseInsensitiveCommunityName",
+        "testRoleLookup"
+      ],
+      "notes": "Natural Reddit feature."
+    },
+    "DS19": {
+      "id": "DS19",
+      "task": "Community post feed index",
+      "feature": "Store posts inside communities sorted by time/score.",
+      "likelyHackathonTask": "Map community to sorted post collection.",
+      "coreStructure": "Map<String, SortedData<Post>",
+      "suggestedClasses": "CommunityPostIndex",
+      "possibleApi": [
+        "addPost(String community, Post post)",
+        "removePost(String community, UUID postId)",
+        "getFeed(String community, int n)",
+        "getNewest(String community)",
+        "communitySize(String community)"
+      ],
+      "testCases": [
+        "testPostAppearsInCorrectCommunity",
+        "testPostNotInOtherCommunity",
+        "testCommunityFeedSorted",
+        "testRemovePost",
+        "testUnknownCommunityReturnsEmpty",
+        "testLargeCommunityFeedTimeout"
+      ],
+      "notes": "Combines maps and SortedData."
+    },
+    "DS20": {
+      "id": "DS20",
+      "task": "Unread notification queue",
+      "feature": "Queue unread notifications per user.",
+      "likelyHackathonTask": "FIFO queues per user.",
+      "coreStructure": "Map<UUID, Queue<Notification>",
+      "suggestedClasses": "NotificationQueue",
+      "possibleApi": [
+        "push(UUID userId, Notification notification)",
+        "peek(UUID userId)",
+        "poll(UUID userId)",
+        "unreadCount(UUID userId)",
+        "clear(UUID userId)"
+      ],
+      "testCases": [
+        "testPushAndPollFIFO",
+        "testPeekDoesNotRemove",
+        "testUnreadCount",
+        "testClearNotifications",
+        "testUnknownUserEmptyQueue",
+        "testDifferentUsersIndependent"
+      ],
+      "notes": "Likely with Observer notifications."
+    },
+    "DS21": {
+      "id": "DS21",
+      "task": "Priority notification queue",
+      "feature": "Prioritize critical notifications over normal ones.",
+      "likelyHackathonTask": "Higher priority first; timestamp tie-breaker.",
+      "coreStructure": "Map<UUID, PriorityQueue<Notification>",
+      "suggestedClasses": "NotificationPriorityQueue",
+      "possibleApi": [
+        "add(Notification notification)",
+        "next(UUID userId)",
+        "nextN(UUID userId, int n)",
+        "size(UUID userId)"
+      ],
+      "testCases": [
+        "testHighPriorityFirst",
+        "testSamePriorityOlderFirst",
+        "testNextRemoves",
+        "testNextNLimit",
+        "testEmptyQueueReturnsNullOrThrows",
+        "testPriorityTieById"
+      ],
+      "notes": "Useful for admin warnings or mentions."
+    },
+    "DS22": {
+      "id": "DS22",
+      "task": "Moderation report priority queue",
+      "feature": "Process reports by severity and age.",
+      "likelyHackathonTask": "Priority queue of report objects with stable comparator.",
+      "coreStructure": "PriorityQueue<Report>, Map<UUID, Report>",
+      "suggestedClasses": "ReportQueue",
+      "possibleApi": [
+        "submit(Report report)",
+        "nextReport()",
+        "resolve(UUID reportId)",
+        "reportsForTarget(UUID targetId)",
+        "size()"
+      ],
+      "testCases": [
+        "testSubmitIncreasesSize",
+        "testHighestSeverityFirst",
+        "testOldestTieFirst",
+        "testResolveRemovesFromActiveQueue",
+        "testDuplicateReportPolicy",
+        "testReportsForTarget"
+      ],
+      "notes": "Moderation is a common AdminState extension."
+    },
+    "DS23": {
+      "id": "DS23",
+      "task": "Undo moderation stack",
+      "feature": "Undo delete/ban/lock actions in reverse order.",
+      "likelyHackathonTask": "Stack of moderation actions.",
+      "coreStructure": "Deque<ModerationAction>",
+      "suggestedClasses": "UndoModerationStack",
+      "possibleApi": [
+        "push(ModerationAction action)",
+        "undo()",
+        "peek()",
+        "isEmpty()",
+        "size()"
+      ],
+      "testCases": [
+        "testUndoLastActionFirst",
+        "testPeekDoesNotRemove",
+        "testEmptyUndoPolicy",
+        "testSizeAfterPushUndo",
+        "testMultipleActionsLIFO",
+        "testNullActionRejected"
+      ],
+      "notes": "Pairs naturally with Command pattern."
+    },
+    "DS24": {
+      "id": "DS24",
+      "task": "Post edit history stack",
+      "feature": "Store previous versions for reverting edits.",
+      "likelyHackathonTask": "Stack per post id.",
+      "coreStructure": "Map<UUID, Deque<PostVersion>",
+      "suggestedClasses": "PostHistoryStack",
+      "possibleApi": [
+        "saveVersion(UUID postId, String content)",
+        "revert(UUID postId)",
+        "peekPrevious(UUID postId)",
+        "versionCount(UUID postId)"
+      ],
+      "testCases": [
+        "testSaveOneVersion",
+        "testRevertMostRecentVersion",
+        "testSeparatePostsIndependent",
+        "testEmptyHistoryPolicy",
+        "testVersionCount",
+        "testSpecialCharactersInVersion"
+      ],
+      "notes": "Can pair with Memento pattern."
+    },
+    "DS25": {
+      "id": "DS25",
+      "task": "Comment thread tree",
+      "feature": "Model nested comments/replies.",
+      "likelyHackathonTask": "General tree plus id-to-node map.",
+      "coreStructure": "Map<UUID, CommentNode>, List<CommentNode>",
+      "suggestedClasses": "CommentThreadTree, CommentNode",
+      "possibleApi": [
+        "addRoot(Message message)",
+        "addReply(UUID parentId, Message reply)",
+        "getReplies(UUID parentId)",
+        "depth(UUID messageId)",
+        "size()"
+      ],
+      "testCases": [
+        "testAddRootComment",
+        "testAddReply",
+        "testAddNestedReply",
+        "testMissingParentRejected",
+        "testDepthCalculation",
+        "testNoCyclesPossible"
+      ],
+      "notes": "Highly likely for Reddit-style backend."
+    },
+    "DS26": {
+      "id": "DS26",
+      "task": "Comment depth-first iterator",
+      "feature": "Flatten nested comments in thread order.",
+      "likelyHackathonTask": "Stack-based DFS iterator.",
+      "coreStructure": "Deque<CommentNode>, Iterator<Message>",
+      "suggestedClasses": "CommentDepthFirstIterator",
+      "possibleApi": [
+        "hasNext()",
+        "next()"
+      ],
+      "testCases": [
+        "testEmptyTreeHasNoNext",
+        "testSingleNodeReturned",
+        "testDFSOrder",
+        "testNextAfterEndPolicy",
+        "testIteratorDoesNotExposeNodes",
+        "testDeepTreeNoInfiniteLoop"
+      ],
+      "notes": "Iterator design pattern and stack usage."
+    },
+    "DS27": {
+      "id": "DS27",
+      "task": "Comment breadth-first iterator",
+      "feature": "Traverse comments level by level.",
+      "likelyHackathonTask": "Queue-based BFS iterator.",
+      "coreStructure": "Queue<CommentNode>, Iterator<Message>",
+      "suggestedClasses": "CommentBreadthFirstIterator",
+      "possibleApi": [
+        "hasNext()",
+        "next()"
+      ],
+      "testCases": [
+        "testBFSOrder",
+        "testMultipleRoots",
+        "testSingleRoot",
+        "testEmptyIterator",
+        "testQueueAddsChildrenAfterVisit",
+        "testLargeBreadthTraversal"
+      ],
+      "notes": "Simple queue task."
+    },
+    "DS28": {
+      "id": "DS28",
+      "task": "Message window slice",
+      "feature": "Support scrolling through a thread.",
+      "likelyHackathonTask": "Maintain a visible window over sorted messages.",
+      "coreStructure": "SortedDataSlice<Message>, AVLTreeSlice<Message>",
+      "suggestedClasses": "MessageWindow",
+      "possibleApi": [
+        "latest(int count)",
+        "shiftForward(int distance)",
+        "shiftBackward(int distance)",
+        "getVisibleMessages()",
+        "isPinnedToEnd()"
+      ],
+      "testCases": [
+        "testLatestWindow",
+        "testShiftBackward",
+        "testShiftForward",
+        "testOvershiftPinsToEnd",
+        "testPinnedWindowReceivesNewMessage",
+        "testUnpinnedWindowDoesNotJump"
+      ],
+      "notes": "Directly matches the current SortedDataSlice idea."
+    },
+    "DS29": {
+      "id": "DS29",
+      "task": "Recent post deque",
+      "feature": "Maintain bounded recent activity list.",
+      "likelyHackathonTask": "Deque of recent post ids with capacity.",
+      "coreStructure": "Deque<UUID>, Set<UUID>",
+      "suggestedClasses": "RecentPostDeque",
+      "possibleApi": [
+        "recordActivity(UUID postId)",
+        "getRecent(int n)",
+        "contains(UUID postId)",
+        "clearOldest()",
+        "size()"
+      ],
+      "testCases": [
+        "testNewestFirst",
+        "testCapacityEvictsOldest",
+        "testRepeatedActivityMovesToFront",
+        "testGetRecentLimit",
+        "testEmptyDeque",
+        "testCapacityZeroPolicy"
+      ],
+      "notes": "Useful for home feed."
+    },
+    "DS30": {
+      "id": "DS30",
+      "task": "Direct-message conversation index",
+      "feature": "Group private messages by user pair/conversation.",
+      "likelyHackathonTask": "Map conversation key to sorted messages.",
+      "coreStructure": "Map<ConversationKey, SortedData<Message>",
+      "suggestedClasses": "ConversationIndex, ConversationKey",
+      "possibleApi": [
+        "send(UUID sender, UUID receiver, String text)",
+        "getConversation(UUID a, UUID b)",
+        "conversationCount(UUID userId)",
+        "deleteConversation(UUID a, UUID b)"
+      ],
+      "testCases": [
+        "testSamePairSameConversationRegardlessOrder",
+        "testMessagesSortedByTime",
+        "testDifferentPairsSeparated",
+        "testDeleteConversation",
+        "testSelfConversationPolicy",
+        "testEmptyTextRejected"
+      ],
+      "notes": "Extends Message beyond post replies."
+    },
+    "DS31": {
+      "id": "DS31",
+      "task": "Conversation unread queue",
+      "feature": "Track unread private messages.",
+      "likelyHackathonTask": "Queue unread messages per user or conversation.",
+      "coreStructure": "Map<UUID, Queue<Message>, Map<ConversationKey, Integer>",
+      "suggestedClasses": "UnreadMessageQueue",
+      "possibleApi": [
+        "receive(UUID userId, Message message)",
+        "readNext(UUID userId)",
+        "preview(UUID userId, int n)",
+        "markConversationRead(UUID userId, ConversationKey key)"
+      ],
+      "testCases": [
+        "testFIFOUnreadOrder",
+        "testPreviewDoesNotRemove",
+        "testReadRemovesOne",
+        "testUnreadCountByConversation",
+        "testMarkConversationRead",
+        "testUnknownUserZeroUnread"
+      ],
+      "notes": "Pairs with notifications."
+    },
+    "DS32": {
+      "id": "DS32",
+      "task": "Rate-limit sliding window",
+      "feature": "Prevent spam by limiting actions per time window.",
+      "likelyHackathonTask": "Queue timestamps per user; remove expired timestamps.",
+      "coreStructure": "Map<UUID, Queue<Long>",
+      "suggestedClasses": "RateLimitWindow",
+      "possibleApi": [
+        "allow(UUID userId, long now)",
+        "record(UUID userId, long now)",
+        "recentCount(UUID userId, long now)"
+      ],
+      "testCases": [
+        "testFirstNActionsAllowed",
+        "testNPlusOneRejected",
+        "testActionAfterWindowAllowed",
+        "testBoundaryAtExactlyWindow",
+        "testManyUsersIndependent",
+        "testOldEntriesPurged"
+      ],
+      "notes": "Strong queue/map task."
+    },
+    "DS33": {
+      "id": "DS33",
+      "task": "Duplicate content detector",
+      "feature": "Detect repeated post/message content.",
+      "likelyHackathonTask": "Store normalized content hashes.",
+      "coreStructure": "HashSet<String>, Map<UUID, Set<String>",
+      "suggestedClasses": "DuplicatePostDetector",
+      "possibleApi": [
+        "isDuplicate(String content)",
+        "record(String content)",
+        "recordIfNew(String content)",
+        "normalize(String content)"
+      ],
+      "testCases": [
+        "testExactDuplicate",
+        "testDifferentContentNotDuplicate",
+        "testWhitespaceNormalization",
+        "testCaseNormalization",
+        "testEmptyContentPolicy",
+        "testUserSpecificVsGlobalPolicy"
+      ],
+      "notes": "Useful anti-spam feature."
+    },
+    "DS34": {
+      "id": "DS34",
+      "task": "Autocomplete trie",
+      "feature": "Suggest usernames, communities, or keywords by prefix.",
+      "likelyHackathonTask": "Trie/prefix tree.",
+      "coreStructure": "TrieNode, Map<Character, TrieNode>",
+      "suggestedClasses": "AutocompleteTrie",
+      "possibleApi": [
+        "insert(String word)",
+        "contains(String word)",
+        "startsWith(String prefix, int limit)",
+        "remove(String word)"
+      ],
+      "testCases": [
+        "testInsertAndContains",
+        "testPrefixSuggestions",
+        "testRemoveOneWordKeepsSharedPrefix",
+        "testCaseSensitivityPolicy",
+        "testEmptyPrefixPolicy",
+        "testLimitRespected"
+      ],
+      "notes": "Very common data-structure task."
+    },
+    "DS35": {
+      "id": "DS35",
+      "task": "Hashtag trie with frequency",
+      "feature": "Suggest hashtags by prefix and popularity.",
+      "likelyHackathonTask": "Trie nodes with terminal frequency count.",
+      "coreStructure": "TrieNode, PriorityQueue<String>",
+      "suggestedClasses": "HashtagTrie",
+      "possibleApi": [
+        "addHashtag(String tag)",
+        "frequency(String tag)",
+        "suggest(String prefix, int limit)",
+        "removeHashtag(String tag)"
+      ],
+      "testCases": [
+        "testFrequencyIncrements",
+        "testSuggestByPrefix",
+        "testHighFrequencyFirst",
+        "testLimitRespected",
+        "testUnknownPrefixEmpty",
+        "testRemoveDecreasesFrequency"
+      ],
+      "notes": "Combines Trie and ranking."
+    },
+    "DS36": {
+      "id": "DS36",
+      "task": "Top-K word counter",
+      "feature": "Find most frequent words in posts/messages.",
+      "likelyHackathonTask": "HashMap counts plus heap for top K.",
+      "coreStructure": "Map<String,Integer>, PriorityQueue<WordCount>",
+      "suggestedClasses": "TopKWordsCounter",
+      "possibleApi": [
+        "addText(String text)",
+        "count(String word)",
+        "topK(int k)",
+        "clear()"
+      ],
+      "testCases": [
+        "testCountsWords",
+        "testCaseInsensitiveCounting",
+        "testPunctuationIgnored",
+        "testTopKOrdering",
+        "testTieBreakerAlphabetical",
+        "testTopKZero"
+      ],
+      "notes": "Good for trending topics."
+    },
+    "DS37": {
+      "id": "DS37",
+      "task": "Feed merge iterator",
+      "feature": "Merge several sorted feeds into one global feed.",
+      "likelyHackathonTask": "Priority queue of iterator heads.",
+      "coreStructure": "PriorityQueue<FeedCursor>, Iterator<Post>",
+      "suggestedClasses": "FeedMergeIterator",
+      "possibleApi": [
+        "hasNext()",
+        "next()"
+      ],
+      "testCases": [
+        "testMergeTwoFeeds",
+        "testMergeEmptyAndNonEmpty",
+        "testGlobalTimestampOrder",
+        "testSameTimestampTieBreaker",
+        "testHasNextDoesNotAdvance",
+        "testManyFeeds"
+      ],
+      "notes": "Useful for following multiple communities."
+    },
+    "DS38": {
+      "id": "DS38",
+      "task": "Related-post graph",
+      "feature": "Connect posts with shared tags, links, or cross-references.",
+      "likelyHackathonTask": "Undirected graph adjacency list.",
+      "coreStructure": "Map<UUID, Set<UUID>",
+      "suggestedClasses": "RelatedPostGraph",
+      "possibleApi": [
+        "connect(UUID a, UUID b)",
+        "disconnect(UUID a, UUID b)",
+        "neighbours(UUID postId)",
+        "areConnected(UUID a, UUID b)"
+      ],
+      "testCases": [
+        "testConnectSymmetric",
+        "testDisconnectSymmetric",
+        "testNoSelfLoop",
+        "testDuplicateEdgeIgnored",
+        "testUnknownPostEmptyNeighbours",
+        "testManyEdges"
+      ],
+      "notes": "Graph task for recommendations."
+    },
+    "DS39": {
+      "id": "DS39",
+      "task": "Post reachability and shortest path",
+      "feature": "Find connected discussions through related-post graph.",
+      "likelyHackathonTask": "BFS/DFS with visited set.",
+      "coreStructure": "Queue<UUID>, Set<UUID>, Map<UUID, UUID>",
+      "suggestedClasses": "PostReachabilityGraph",
+      "possibleApi": [
+        "reachableFrom(UUID postId)",
+        "pathExists(UUID from, UUID to)",
+        "shortestPath(UUID from, UUID to)"
+      ],
+      "testCases": [
+        "testReachableChain",
+        "testDisconnectedNodes",
+        "testCycleDoesNotInfiniteLoop",
+        "testShortestPath",
+        "testSameNodePath",
+        "testMissingNodePolicy"
+      ],
+      "notes": "Classic graph traversal task."
+    },
+    "DS40": {
+      "id": "DS40",
+      "task": "LRU post cache",
+      "feature": "Cache recently viewed posts.",
+      "likelyHackathonTask": "LinkedHashMap or deque plus map.",
+      "coreStructure": "LinkedHashMap<UUID, Post>",
+      "suggestedClasses": "LRUPostCache",
+      "possibleApi": [
+        "put(Post post)",
+        "get(UUID postId)",
+        "contains(UUID postId)",
+        "size()",
+        "clear()"
+      ],
+      "testCases": [
+        "testPutAndGet",
+        "testCapacityEvictsLeastRecentlyUsed",
+        "testGetRefreshesRecency",
+        "testUpdateExistingPost",
+        "testCapacityOne",
+        "testMissingPostReturnsNullOrOptional"
+      ],
+      "notes": "Performance-oriented data-structure task."
+    },
+    "DS41": {
+      "id": "DS41",
+      "task": "Session token map",
+      "feature": "Map login tokens to users with expiry.",
+      "likelyHackathonTask": "HashMap token -> session and priority queue by expiry.",
+      "coreStructure": "Map<String, Session>, PriorityQueue<Session>",
+      "suggestedClasses": "SessionIndex",
+      "possibleApi": [
+        "createSession(UUID userId, long expiry)",
+        "getUser(String token, long now)",
+        "invalidate(String token)",
+        "purgeExpired(long now)"
+      ],
+      "testCases": [
+        "testCreateAndLookupSession",
+        "testExpiredSessionRejected",
+        "testInvalidateSession",
+        "testPurgeExpired",
+        "testMultipleSessionsPerUser",
+        "testUnknownToken"
+      ],
+      "notes": "Fits login backend."
+    },
+    "DS42": {
+      "id": "DS42",
+      "task": "Attachment metadata index",
+      "feature": "Index attachments by file type, owner, or post.",
+      "likelyHackathonTask": "Maps from owner/post/type to attachment ids.",
+      "coreStructure": "Map<UUID, Set<Attachment>, Map<String, Set<Attachment>",
+      "suggestedClasses": "AttachmentIndex",
+      "possibleApi": [
+        "add(Attachment attachment)",
+        "byPost(UUID postId)",
+        "byUser(UUID userId)",
+        "byType(String type)",
+        "remove(UUID attachmentId)"
+      ],
+      "testCases": [
+        "testAddAttachment",
+        "testLookupByPost",
+        "testLookupByType",
+        "testRemoveAttachment",
+        "testUnknownTypeEmpty",
+        "testDuplicateAttachmentRejected"
+      ],
+      "notes": "If media attachments are introduced."
+    },
+    "DS43": {
+      "id": "DS43",
+      "task": "Pinned post set",
+      "feature": "Maintain pinned posts for a community or admin.",
+      "likelyHackathonTask": "Set of pinned post ids plus ordered list.",
+      "coreStructure": "LinkedHashSet<UUID>, Map<String, LinkedHashSet<UUID>",
+      "suggestedClasses": "PinnedPostIndex",
+      "possibleApi": [
+        "pin(String community, UUID postId)",
+        "unpin(String community, UUID postId)",
+        "isPinned(String community, UUID postId)",
+        "getPinned(String community)"
+      ],
+      "testCases": [
+        "testPinPost",
+        "testDuplicatePinNoDuplicate",
+        "testUnpinPost",
+        "testPinnedOrderStable",
+        "testSeparateCommunities",
+        "testPinMissingPostPolicy"
+      ],
+      "notes": "Simple but likely moderation feature."
+    },
+    "DS44": {
+      "id": "DS44",
+      "task": "Draft post store",
+      "feature": "Store unsubmitted drafts per user.",
+      "likelyHackathonTask": "Map user to draft ids, sorted by update time.",
+      "coreStructure": "Map<UUID, SortedData<DraftPost>",
+      "suggestedClasses": "DraftPostStore",
+      "possibleApi": [
+        "saveDraft(UUID userId, DraftPost draft)",
+        "deleteDraft(UUID userId, UUID draftId)",
+        "getDrafts(UUID userId)",
+        "latestDraft(UUID userId)"
+      ],
+      "testCases": [
+        "testSaveDraft",
+        "testUpdateDraftMovesLatest",
+        "testDeleteDraft",
+        "testUserDraftsSeparated",
+        "testEmptyDrafts",
+        "testDraftLimitPolicy"
+      ],
+      "notes": "Pairs with persistent data and post State."
+    },
+    "DS45": {
+      "id": "DS45",
+      "task": "Runtime object graph traversal engine",
+      "feature": "Dynamically discover Message objects from arbitrary runtime object graphs.",
+      "likelyHackathonTask": "Build a recursive traversal engine capable of searching unknown nested structures containing Message objects.",
+      "coreStructure": "Reflection traversal, recursive graph walking, Iterator traversal, cycle detection, runtime inspection.",
+      "suggestedClasses": "MessageFinder, ObjectTraversalEngine, TraversalContext, RuntimeObjectWalker",
+      "possibleApi": [
+        "findMessage(UUID id)",
+        "findMessages(Object root)",
+        "traverse(Object source)",
+        "shouldInspectObject(Class<?> type)",
+        "findMessageInIterable(...)",
+        "findMessageInMap(...)",
+        "findMessageFromFields(...)",
+        "findMessageFromAccessor(...)"
+      ],
+      "testCases": [
+        "testFindMessageInNestedIterable",
+        "testFindMessageInMapValue",
+        "testFindMessageInInheritedField",
+        "testAvoidInfiniteRecursionOnCycles",
+        "testIgnorePrimitiveTypes",
+        "testIgnoreJavaLibraryObjects",
+        "testFindMessageThroughAccessor",
+        "testTraversalHandlesArrays",
+        "testTraversalHandlesUnknownContainers",
+        "testDuplicateObjectsVisitedOnce"
+      ],
+      "notes": "Suitable for framework-style infrastructure tasks, runtime inspection systems, serializers, object explorers, debuggers, or generic traversal engines."
+    },
+    "DS46": {
+      "id": "DS46",
+      "task": "Post id B-tree index",
+      "feature": "Search many posts by id with disk-friendly structure.",
+      "likelyHackathonTask": "Simplified B-tree with multi-key nodes.",
+      "coreStructure": "BTreeNode<Post>, BTree<Post>",
+      "suggestedClasses": "PostIdBTreeIndex",
+      "possibleApi": [
+        "insert(UUID postId, Post post)",
+        "search(UUID postId)",
+        "contains(UUID postId)",
+        "height()",
+        "range(UUID start, int count)"
+      ],
+      "testCases": [
+        "testInsertAndSearch",
+        "testMissingKey",
+        "testNodeSplit",
+        "testRootSplit",
+        "testKeysRemainSorted",
+        "testRangeAcrossNodes",
+        "testDuplicateKeyRejected"
+      ],
+      "notes": "Likely if B-tree/refactoring lecture is assessed."
+    },
+    "DS47": {
+      "id": "DS47",
+      "task": "Timestamp range search service",
+      "feature": "Find posts/messages in a time interval.",
+      "likelyHackathonTask": "AVL range traversal or TreeMap sub-map idea.",
+      "coreStructure": "SortedData<Post>, SortedData<Message>",
+      "suggestedClasses": "TimeRangeIndex",
+      "possibleApi": [
+        "addPost(Post post)",
+        "postsBetween(long start, long end)",
+        "messagesBetween(long start, long end)",
+        "countBetween(long start, long end)"
+      ],
+      "testCases": [
+        "testRangeIncludesStartAndEnd",
+        "testRangeBeforeAllEmpty",
+        "testRangeAfterAllEmpty",
+        "testRangeSingleElement",
+        "testInvalidRangePolicy",
+        "testLargeRangeTimeout"
+      ],
+      "notes": "Useful for recent activity and moderation audits."
+    },
+    "DS48": {
+      "id": "DS48",
+      "task": "Topic co-occurrence graph",
+      "feature": "Connect topics that appear together in posts.",
+      "likelyHackathonTask": "Undirected weighted graph.",
+      "coreStructure": "Map<String, Map<String,Integer>",
+      "suggestedClasses": "TopicGraph",
+      "possibleApi": [
+        "recordPostTopics(Collection<String> topics)",
+        "weight(String a, String b)",
+        "relatedTopics(String topic, int n)"
+      ],
+      "testCases": [
+        "testSingleTopicNoEdges",
+        "testTwoTopicsCreateEdge",
+        "testRepeatedPairIncrementsWeight",
+        "testRelatedTopicsSortedByWeight",
+        "testNoSelfEdge",
+        "testCaseNormalization"
+      ],
+      "notes": "Useful for recommendations and analytics."
+    },
+    "PD01": {
+      "id": "PD01",
+      "task": "Reaction persistence",
+      "feature": "Save and load likes/reactions.",
+      "likelyHackathonTask": "Create a serializer and data pipeline for reaction records.",
+      "coreStructure": "reactions.csv: reactionId,targetId,targetType,userId,reactionType,timestamp",
+      "suggestedClasses": "Reaction, ReactionSerializer, ReactionDAO, DataPipeline<Reaction,String[]>",
+      "possibleApi": [
+        "serialize(Reaction reaction)",
+        "deserialize(String[] data)",
+        "DataManager.writeReactions()",
+        "DataManager.readReactions()"
+      ],
+      "testCases": [
+        "testReactionSerializerRoundTrip",
+        "testDuplicateReactionLoadPolicy",
+        "testInvalidReactionTypeThrows",
+        "testMissingTargetHandled",
+        "testSaveLoadMultipleReactions",
+        "testSpecialUUIDParsing"
+      ],
+      "notes": "Pairs with DS12/DS13."
+    },
+    "PD02": {
+      "id": "PD02",
+      "task": "Vote persistence",
+      "feature": "Save post/message votes.",
+      "likelyHackathonTask": "Persist one vote per user per target.",
+      "coreStructure": "votes.csv: voteId,targetId,targetType,userId,value,timestamp",
+      "suggestedClasses": "Vote, VoteSerializer, VoteDAO",
+      "possibleApi": [
+        "serialize(Vote vote)",
+        "deserialize(String[] row)",
+        "writeVotes()",
+        "readVotes()"
+      ],
+      "testCases": [
+        "testVoteRoundTrip",
+        "testUpvoteAndDownvotePersist",
+        "testInvalidVoteValueRejected",
+        "testVotesReloadRebuildScores",
+        "testDuplicateUserVotePolicy",
+        "testEmptyVotesFile"
+      ],
+      "notes": "Derived scores can be rebuilt after load."
+    },
+    "PD03": {
+      "id": "PD03",
+      "task": "Notification persistence",
+      "feature": "Save unread/read notifications.",
+      "likelyHackathonTask": "Persist notifications and read state.",
+      "coreStructure": "notifications.csv: notifica- tionId,userId,type,targetId,message,createdAt,read",
+      "suggestedClasses": "Notification, NotificationSerializer, NotificationDAO",
+      "possibleApi": [
+        "serialize(Notification n)",
+        "deserialize(String[] row)",
+        "readNotifications()",
+        "writeNotifications()"
+      ],
+      "testCases": [
+        "testUnreadNotificationRoundTrip",
+        "testReadFlagPersists",
+        "testInvalidBooleanRejected",
+        "testNotificationOrderAfterLoad",
+        "testEscapedMessageText",
+        "testMissingUserPolicy"
+      ],
+      "notes": "Useful with Observer notifications."
+    },
+    "PD04": {
+      "id": "PD04",
+      "task": "Report persistence",
+      "feature": "Save moderation reports.",
+      "likelyHackathonTask": "Persist report status and metadata.",
+      "coreStructure": "reports.csv: reportId,reporterId,targetId,targetType,reason,status,createdAt,resolvedAt",
+      "suggestedClasses": "Report, ReportSerializer, ReportDAO",
+      "possibleApi": [
+        "serialize(Report report)",
+        "deserialize(String[] row)",
+        "readReports()",
+        "writeReports()"
+      ],
+      "testCases": [
+        "testOpenReportRoundTrip",
+        "testResolvedReportRoundTrip",
+        "testMissingResolvedAtAllowedForOpen",
+        "testInvalidStatusThrows",
+        "testReasonWithCommaAndNewline",
+        "testReportsReloadIntoPriorityQueue"
+      ],
+      "notes": "Works with AdminState and report queue."
+    },
+    "PD05": {
+      "id": "PD05",
+      "task": "Follow relationship persistence",
+      "feature": "Save follows/subscriptions between users.",
+      "likelyHackathonTask": "Persist directed graph edges.",
+      "coreStructure": "follows.csv: followerId,followeeId,createdAt",
+      "suggestedClasses": "FollowEdge, FollowSerializer, FollowDAO",
+      "possibleApi": [
+        "serialize(FollowEdge e)",
+        "deserialize(String[] row)",
+        "readFollows()",
+        "writeFollows()"
+      ],
+      "testCases": [
+        "testFollowEdgeRoundTrip",
+        "testSelfFollowRejectedOnLoad",
+        "testDuplicateFollowPolicy",
+        "testMissingUserPolicy",
+        "testManyFollowsReloadGraph",
+        "testEmptyFollowFile"
+      ],
+      "notes": "Restores DS16 graph."
+    },
+    "PD06": {
+      "id": "PD06",
+      "task": "Community persistence",
+      "feature": "Save community records.",
+      "likelyHackathonTask": "Persist subreddit/community data.",
+      "coreStructure": "communities.csv: communityId,name,description,createdBy,createdAt",
+      "suggestedClasses": "Community, CommunitySerializer, CommunityDAO",
+      "possibleApi": [
+        "serialize(Community c)",
+        "deserialize(String[] row)",
+        "readCommunities()",
+        "writeCommunities()"
+      ],
+      "testCases": [
+        "testCommunityRoundTrip",
+        "testDescriptionWithCommaEscaped",
+        "testDuplicateCommunityNamePolicy",
+        "testInvalidCreatorPolicy",
+        "testCaseInsensitiveNameOnLoad",
+        "testEmptyDescriptionAllowed"
+      ],
+      "notes": "Natural Reddit-style extension."
+    },
+    "PD07": {
+      "id": "PD07",
+      "task": "Community membership persistence",
+      "feature": "Save members and roles.",
+      "likelyHackathonTask": "Persist community-user relationships.",
+      "coreStructure": "community_members.csv: communityId,userId,role,joinedAt",
+      "suggestedClasses": "CommunityMembership, CommunityMembershipSerializer",
+      "possibleApi": [
+        "serialize(CommunityMembership m)",
+        "deserialize(String[] row)",
+        "readCommunityMembers()",
+        "writeCommunityMembers()"
+      ],
+      "testCases": [
+        "testMembershipRoundTrip",
+        "testInvalidRoleThrows",
+        "testMissingCommunityPolicy",
+        "testMissingUserPolicy",
+        "testDuplicateMembershipPolicy",
+        "testMembersReloadIntoIndex"
+      ],
+      "notes": "Pairs with DS18."
+    },
+    "PD08": {
+      "id": "PD08",
+      "task": "Saved posts persistence",
+      "feature": "Save bookmarks.",
+      "likelyHackathonTask": "Persist user-post saved records.",
+      "coreStructure": "saved_posts.csv: userId,postId,savedAt,folderName",
+      "suggestedClasses": "SavedPost, SavedPostSerializer, SavedPostDAO",
+      "possibleApi": [
+        "serialize(SavedPost s)",
+        "deserialize(String[] row)",
+        "readSavedPosts()",
+        "writeSavedPosts()"
+      ],
+      "testCases": [
+        "testSavedPostRoundTrip",
+        "testDuplicateSavedPostPolicy",
+        "testMissingPostPolicy",
+        "testFolderNameEscaping",
+        "testSavedPostsReloadByUser",
+        "testEmptySavedFile"
+      ],
+      "notes": "Simple and likely."
+    },
+    "PD09": {
+      "id": "PD09",
+      "task": "Block/mute persistence",
+      "feature": "Save user block and topic mute lists.",
+      "likelyHackathonTask": "Persist block relationships and muted topics.",
+      "coreStructure": "blocks.csv: blockerId,blockedId,createdAt; mutes.csv:\nuserId,topic,createdAt",
+      "suggestedClasses": "BlockRecord, MuteRecord, BlockSerializer, MuteSerializer",
+      "possibleApi": [
+        "serialize(BlockRecord b)",
+        "deserialize(String[] row)",
+        "readBlocks()",
+        "writeBlocks()"
+      ],
+      "testCases": [
+        "testBlockRoundTrip",
+        "testSelfBlockRejectedOnLoad",
+        "testDuplicateBlockPolicy",
+        "testMuteTopicRoundTrip",
+        "testTopicWithSpaces",
+        "testReloadFilterIndex"
+      ],
+      "notes": "Pairs with filtering tasks."
+    },
+    "PD10": {
+      "id": "PD10",
+      "task": "Direct message persistence",
+      "feature": "Save private messages.",
+      "likelyHackathonTask": "Persist direct messages independent of posts.",
+      "coreStructure": "direct_messages.csv: mes- sageId,conversationId,senderId,receiverId,timestamp,body,read",
+      "suggestedClasses": "DirectMessage, DirectMessageSerializer, ConversationDAO",
+      "possibleApi": [
+        "serialize(DirectMessage dm)",
+        "deserialize(String[] row)",
+        "readDirectMessages()",
+        "writeDirectMessages()"
+      ],
+      "testCases": [
+        "testDMRoundTrip",
+        "testBodyWithCommaQuoteNewline",
+        "testReadFlagPersists",
+        "testConversationRebuiltAfterLoad",
+        "testMissingUserPolicy",
+        "testMessagesSortedAfterLoad"
+      ],
+      "notes": "Extends Message model."
+    },
+    "PD11": {
+      "id": "PD11",
+      "task": "Conversation metadata persistence",
+      "feature": "Save conversation membership and status.",
+      "likelyHackathonTask": "Persist conversation id and participants.",
+      "coreStructure": "conversations.csv: conversa- tionId,userA,userB,createdAt,lastReadA,lastReadB",
+      "suggestedClasses": "Conversation, ConversationSerializer",
+      "possibleApi": [
+        "serialize(Conversation c)",
+        "deserialize(String[] row)",
+        "readConversations()",
+        "writeConversations()"
+      ],
+      "testCases": [
+        "testConversationRoundTrip",
+        "testSamePairCanonicalKey",
+        "testLastReadPersists",
+        "testMissingParticipantPolicy",
+        "testDuplicateConversationPolicy",
+        "testLoadBeforeMessages"
+      ],
+      "notes": "Needed if direct messages are feature-rich."
+    },
+    "PD12": {
+      "id": "PD12",
+      "task": "Nested comment tree persistence",
+      "feature": "Save parent-child comment links.",
+      "likelyHackathonTask": "Persist parentMessageId to reconstruct tree.",
+      "coreStructure": "comments.csv: messageId,postId,parentMessageId,posterId,timestamp,body",
+      "suggestedClasses": "CommentSerializer, CommentTreeLoader",
+      "possibleApi": [
+        "serialize(Comment c)",
+        "deserialize(String[] row)",
+        "rebuildTree(Collection<Comment>)"
+      ],
+      "testCases": [
+        "testRootCommentParentEmpty",
+        "testNestedCommentRoundTrip",
+        "testMissingParentPolicy",
+        "testCycleDetectionOnLoad",
+        "testDFSOrderAfterLoad",
+        "testBodyEscaping"
+      ],
+      "notes": "Important for DS25."
+    },
+    "PD13": {
+      "id": "PD13",
+      "task": "Edit history persistence",
+      "feature": "Save previous versions of posts/messages.",
+      "likelyHackathonTask": "Persist append-only versions.",
+      "coreStructure": "edits.csv: editId,targetId,editorId,oldText,newText,editedAt",
+      "suggestedClasses": "EditRecord, EditHistorySerializer",
+      "possibleApi": [
+        "serialize(EditRecord e)",
+        "deserialize(String[] row)",
+        "readEditHistory()",
+        "writeEditHistory()"
+      ],
+      "testCases": [
+        "testEditRecordRoundTrip",
+        "testOldAndNewTextEscaped",
+        "testEditsSortedByTimeAfterLoad",
+        "testMissingTargetPolicy",
+        "testMultipleEditsSameTarget",
+        "testEmptyEditFile"
+      ],
+      "notes": "Pairs with stack/history tasks."
+    },
+    "PD14": {
+      "id": "PD14",
+      "task": "Moderation log persistence",
+      "feature": "Save admin actions.",
+      "likelyHackathonTask": "Persist who did what and when.",
+      "coreStructure": "moderation_log.csv: ac- tionId,moderatorId,actionType,targetId,timestamp,reason,undoable",
+      "suggestedClasses": "ModerationActionRecord, ModerationLogSerializer",
+      "possibleApi": [
+        "serialize(ModerationActionRecord a)",
+        "deserialize(String[] row)",
+        "readModerationLog()",
+        "writeModerationLog()"
+      ],
+      "testCases": [
+        "testActionRoundTrip",
+        "testInvalidActionTypeThrows",
+        "testReasonEscaping",
+        "testUndoableFlagPersists",
+        "testActionsReloadInTimeOrder",
+        "testMissingModeratorPolicy"
+      ],
+      "notes": "Useful for audit log and Command undo."
+    },
+    "PD15": {
+      "id": "PD15",
+      "task": "User settings persistence",
+      "feature": "Save theme, notifications, and privacy settings.",
+      "likelyHackathonTask": "Persist key-value settings.",
+      "coreStructure": "user_settings.csv: userId,key,value",
+      "suggestedClasses": "UserSetting, UserSettingSerializer, UserSettingsDAO",
+      "possibleApi": [
+        "serialize(UserSetting s)",
+        "deserialize(String[] row)",
+        "getSetting(UUID user, String key)",
+        "setSetting(UUID user, String key, String value)"
+      ],
+      "testCases": [
+        "testSettingRoundTrip",
+        "testMultipleSettingsSameUser",
+        "testOverwriteSetting",
+        "testMissingUserPolicy",
+        "testValueEscaping",
+        "testDefaultValueWhenMissing"
+      ],
+      "notes": "Simple DataPipeline task."
+    },
+    "PD16": {
+      "id": "PD16",
+      "task": "Keyword index snapshot",
+      "feature": "Save derived keyword index to avoid rebuild cost.",
+      "likelyHackathonTask": "Persist keyword-target rows or explicitly choose rebuild-on-load.",
+      "coreStructure": "keyword_index.csv: keyword,targetType,targetId",
+      "suggestedClasses": "KeywordIndexSerializer, KeywordIndexSnapshot",
+      "possibleApi": [
+        "writeKeywordIndex(PostKeywordIndex index)",
+        "readKeywordIndex()",
+        "rebuildFromPostsIfMissing()"
+      ],
+      "testCases": [
+        "testIndexSnapshotRoundTrip",
+        "testRebuiltIndexMatchesSnapshot",
+        "testMissingTargetIgnoredOrRejected",
+        "testDuplicateKeywordRowPolicy",
+        "testCaseNormalizationAfterLoad",
+        "testEmptyIndexSnapshot"
+      ],
+      "notes": "A good discussion point: derived data may not need persistence."
+    },
+    "PD17": {
+      "id": "PD17",
+      "task": "Hashtag index snapshot",
+      "feature": "Save hashtag index and frequencies.",
+      "likelyHackathonTask": "Persist tag-to-target mappings and counts.",
+      "coreStructure": "hashtag_index.csv: hashtag,targetId,targetType,count",
+      "suggestedClasses": "HashtagIndexSnapshotSerializer",
+      "possibleApi": [
+        "writeHashtagIndex()",
+        "readHashtagIndex()",
+        "rebuildHashtags()"
+      ],
+      "testCases": [
+        "testHashtagSnapshotRoundTrip",
+        "testFrequencyRestored",
+        "testTagNormalization",
+        "testMissingTargetPolicy",
+        "testTrendingAfterLoad",
+        "testEmptySnapshot"
+      ],
+      "notes": "Pairs with DS03/DS35."
+    },
+    "PD18": {
+      "id": "PD18",
+      "task": "Karma leaderboard snapshot",
+      "feature": "Save user karma scores.",
+      "likelyHackathonTask": "Persist scores or rebuild from votes.",
+      "coreStructure": "karma.csv: userId,score,lastUpdated",
+      "suggestedClasses": "KarmaSerializer, KarmaDAO",
+      "possibleApi": [
+        "serialize(UserScore s)",
+        "deserialize(String[] row)",
+        "readKarma()",
+        "writeKarma()"
+      ],
+      "testCases": [
+        "testKarmaRoundTrip",
+        "testNegativeScorePersists",
+        "testScoresReloadIntoLeaderboard",
+        "testDuplicateUserScorePolicy",
+        "testMissingUserPolicy",
+        "testInvalidIntegerThrows"
+      ],
+      "notes": "Scores may be derived from votes."
+    },
+    "PD19": {
+      "id": "PD19",
+      "task": "Session persistence",
+      "feature": "Save sessions if remember-login is required.",
+      "likelyHackathonTask": "Persist token, user id, expiry time.",
+      "coreStructure": "sessions.csv: token,userId,createdAt,expiresAt",
+      "suggestedClasses": "Session, SessionSerializer",
+      "possibleApi": [
+        "serialize(Session s)",
+        "deserialize(String[] row)",
+        "readSessions(long now)",
+        "writeSessions()"
+      ],
+      "testCases": [
+        "testSessionRoundTrip",
+        "testExpiredSessionIgnoredOnLoad",
+        "testInvalidExpiryThrows",
+        "testTokenEscaping",
+        "testInvalidateThenSave",
+        "testMissingUserPolicy"
+      ],
+      "notes": "May be unnecessary if sessions are transient."
+    },
+    "PD20": {
+      "id": "PD20",
+      "task": "Data version header",
+      "feature": "Add version/schema information to saved files.",
+      "likelyHackathonTask": "Read version first, then select deserializer or migration path.",
+      "coreStructure": "versioned file header: version=2",
+      "suggestedClasses": "DataVersion, VersionedReader, VersionedWriter",
+      "possibleApi": [
+        "writeHeader(int version)",
+        "readHeader()",
+        "selectMigration(int fromVersion)"
+      ],
+      "testCases": [
+        "testVersionHeaderWritten",
+        "testVersionHeaderRead",
+        "testMissingHeaderDefaultsToV1",
+        "testUnsupportedVersionThrows",
+        "testVersionedFileStillReadsRows",
+        "testWriteThenReadSameVersion"
+      ],
+      "notes": "Useful when task changes schema."
+    },
+    "PD21": {
+      "id": "PD21",
+      "task": "Migration from old schema",
+      "feature": "Load old saved files into new object model.",
+      "likelyHackathonTask": "Implement a migration from v1 post schema to v2 with extra fields.",
+      "coreStructure": "input v1: id,poster,topic; output v2 adds createdAt,score,community",
+      "suggestedClasses": "PostMigrationV1ToV2, MigrationManager",
+      "possibleApi": [
+        "migratePostRow(String[] oldRow)",
+        "migrateFile(String oldFile, String newFile)"
+      ],
+      "testCases": [
+        "testV1PostMigratesWithDefaults",
+        "testInvalidV1RowThrows",
+        "testMigrationPreservesIds",
+        "testMigrationAddsDefaultCommunity",
+        "testMigrationIdempotence",
+        "testManyRowsMigrated"
+      ],
+      "notes": "Strong maintainability task."
+    },
+    "PD22": {
+      "id": "PD22",
+      "task": "Backup snapshot",
+      "feature": "Export all application data into one backup.",
+      "likelyHackathonTask": "Write a full snapshot of users, posts, messages, and new feature data.",
+      "coreStructure": "snapshot.json or multiple csv files in backup folder",
+      "suggestedClasses": "BackupManager, Snapshot",
+      "possibleApi": [
+        "exportSnapshot()",
+        "importSnapshot(Snapshot snapshot)",
+        "restoreFromBackup()"
+      ],
+      "testCases": [
+        "testBackupContainsAllEntities",
+        "testRestoreRecreatesUsersPostsMessages",
+        "testRestorePreservesRelationships",
+        "testBackupEmptySystem",
+        "testRestoreRejectsInvalidSnapshot",
+        "testExportImportRoundTrip"
+      ],
+      "notes": "Can be CSV or JSON depending on allowed tools."
+    },
+    "PD23": {
+      "id": "PD23",
+      "task": "Atomic save using temp file",
+      "feature": "Avoid corrupted saves if writing fails.",
+      "likelyHackathonTask": "Write to temporary file, then rename on success.",
+      "coreStructure": "file.tmp -> file.txt",
+      "suggestedClasses": "AtomicFileWriter, SafeDataManager",
+      "possibleApi": [
+        "writeAtomically(String file, Consumer<Writer> writer)",
+        "replaceOriginalOnSuccess()"
+      ],
+      "testCases": [
+        "testSuccessfulWriteReplacesOldFile",
+        "testFailedWriteKeepsOldFile",
+        "testTempFileCleanedUp",
+        "testEmptyWriteStillValid",
+        "testIOExceptionHandled",
+        "testMultipleFilesSaveOrder"
+      ],
+      "notes": "Robustness-focused persistent data task."
+    },
+    "PD24": {
+      "id": "PD24",
+      "task": "JSON formatted factory",
+      "feature": "Add JSON format support behind FormattedFactory.",
+      "likelyHackathonTask": "Implement reader/writer compatible with existing DataPipeline abstraction.",
+      "coreStructure": "users.json, posts.json, messages.json",
+      "suggestedClasses": "JSONFormattedFactory, JSONReader, JSONWriter",
+      "possibleApi": [
+        "writer(Writer w)",
+        "reader(Reader r)",
+        "putNext(JsonObject obj)",
+        "getNext()"
+      ],
+      "testCases": [
+        "testJsonWriterOneObject",
+        "testJsonReaderOneObject",
+        "testJsonRoundTripUser",
+        "testSpecialCharactersInJson",
+        "testMalformedJsonThrows",
+        "testEmptyArrayReadsNoRows"
+      ],
+      "notes": "Likely because persistent data lectures include JSON."
+    },
+    "PD25": {
+      "id": "PD25",
+      "task": "XML formatted factory",
+      "feature": "Add XML export/import support.",
+      "likelyHackathonTask": "Implement XML reader/writer or export-only view.",
+      "coreStructure": "data.xml",
+      "suggestedClasses": "XMLFormattedFactory, XMLReader, XMLWriter",
+      "possibleApi": [
+        "writer(Writer w)",
+        "reader(Reader r)",
+        "putNext(XmlElement e)",
+        "getNext()"
+      ],
+      "testCases": [
+        "testXmlEscapesLessThanAndAmpersand",
+        "testXmlRoundTripPost",
+        "testCaseSensitiveTagPolicy",
+        "testMalformedXmlThrows",
+        "testNestedMessagesExport",
+        "testEmptyRoot"
+      ],
+      "notes": "Remember XML escaping for < and &."
+    },
+    "PD26": {
+      "id": "PD26",
+      "task": "Robust CSV escaping",
+      "feature": "Improve CSV handling for commas, quotes, and newlines.",
+      "likelyHackathonTask": "Ensure CSVReader/CSVWriter obey escaping rules.",
+      "coreStructure": "CSVFormat, CSVReader, CSVWriter",
+      "suggestedClasses": "CSVReader, CSVWriter",
+      "possibleApi": [
+        "putNext(String[] row)",
+        "getNext()",
+        "hasNext()"
+      ],
+      "testCases": [
+        "testCommaInField",
+        "testQuoteInField",
+        "testNewlineInField",
+        "testEmptyField",
+        "testTooFewFieldsThrows",
+        "testTooManyFieldsThrows",
+        "testUnterminatedQuoteThrows"
+      ],
+      "notes": "Very likely because messages contain arbitrary text."
+    },
+    "PD27": {
+      "id": "PD27",
+      "task": "Relationship resolver on load",
+      "feature": "Reconnect messages, reactions, and communities after loading.",
+      "likelyHackathonTask": "Load raw objects first, then validate references.",
+      "coreStructure": "N/A",
+      "suggestedClasses": "RelationshipResolver, DataLoadContext",
+      "possibleApi": [
+        "resolveMessagesToPosts()",
+        "resolveVotesToTargets()",
+        "validateUsersExist()",
+        "removeOrphansOrThrow()"
+      ],
+      "testCases": [
+        "testMessageWithValidPostAttached",
+        "testMessageWithMissingPostRejected",
+        "testReactionWithMissingTargetPolicy",
+        "testMembershipWithMissingCommunityPolicy",
+        "testLoadOrderIndependentResolution",
+        "testDuplicateIdsRejected"
+      ],
+      "notes": "Important integration task."
+    },
+    "PD28": {
+      "id": "PD28",
+      "task": "Load order coordinator",
+      "feature": "Ensure entities load in dependency order.",
+      "likelyHackathonTask": "Users before posts; posts before messages; relationships after entities.",
+      "coreStructure": "N/A",
+      "suggestedClasses": "DataLoadCoordinator",
+      "possibleApi": [
+        "readAllInOrder()",
+        "writeAllInOrder()",
+        "registerPipeline(String name, DataPipeline<?,?> pipeline)"
+      ],
+      "testCases": [
+        "testUsersLoadBeforePosts",
+        "testPostsLoadBeforeMessages",
+        "testVotesLoadAfterTargets",
+        "testReadAllHandlesMissingOptionalFile",
+        "testWriteAllIncludesNewFeature",
+        "testCoordinatorCallsEachPipelineOnce"
+      ],
+      "notes": "Current DataManager can be extended here."
+    },
+    "PD29": {
+      "id": "PD29",
+      "task": "Missing file policy",
+      "feature": "Define what happens if saved file is missing.",
+      "likelyHackathonTask": "Missing optional data file should not crash; missing required file may initialise empty\nDAO.",
+      "coreStructure": "N/A",
+      "suggestedClasses": "MissingFilePolicy, DataManager",
+      "possibleApi": [
+        "handleMissing(String fileName)",
+        "readOptional(String fileName)",
+        "readRequired(String fileName)"
+      ],
+      "testCases": [
+        "testMissingOptionalFileDoesNotCrash",
+        "testMissingRequiredFilePolicy",
+        "testMissingFileCreatesEmptyDAO",
+        "testErrorMessageClear",
+        "testWriteCreatesFileLater",
+        "testAllMissingFreshStart"
+      ],
+      "notes": "Good robustness task."
+    },
+    "PD30": {
+      "id": "PD30",
+      "task": "Malformed row policy",
+      "feature": "Handle invalid rows consistently.",
+      "likelyHackathonTask": "Reject, skip, or collect errors for malformed saved data.",
+      "coreStructure": "N/A",
+      "suggestedClasses": "MalformedRowHandler, PersistentDataException",
+      "possibleApi": [
+        "onMalformedRow(String file, int line, Exception e)",
+        "getErrors()",
+        "shouldContinue()"
+      ],
+      "testCases": [
+        "testBadUUIDDetected",
+        "testInvalidTimestampDetected",
+        "testWrongColumnCountDetected",
+        "testSkipModeContinues",
+        "testStrictModeThrows",
+        "testErrorListContainsLineNumber"
+      ],
+      "notes": "Good white-box/robustness task."
+    },
+    "PD31": {
+      "id": "PD31",
+      "task": "Data integrity validator",
+      "feature": "Validate DAOs after load.",
+      "likelyHackathonTask": "Check uniqueness, foreign keys, and invariants.",
+      "coreStructure": "N/A",
+      "suggestedClasses": "DataIntegrityValidator",
+      "possibleApi": [
+        "validateUsers()",
+        "validatePosts()",
+        "validateMessages()",
+        "validateAll()"
+      ],
+      "testCases": [
+        "testDuplicateUsernamesDetected",
+        "testDuplicatePostIdsDetected",
+        "testPostPosterExists",
+        "testMessageThreadExists",
+        "testVoteTargetExists",
+        "testValidatorPassesValidData"
+      ],
+      "notes": "Design by Contract style validation."
+    },
+    "PD32": {
+      "id": "PD32",
+      "task": "Append-only event log",
+      "feature": "Persist every action instead of only current state.",
+      "likelyHackathonTask": "Record create post, reply, like, delete, login, etc.",
+      "coreStructure": "events.csv: eventId,eventType,userId,targetId,timestamp,payload",
+      "suggestedClasses": "EventLog, EventRecord, EventSerializer",
+      "possibleApi": [
+        "append(EventRecord event)",
+        "readEvents()",
+        "replayEvents()",
+        "eventsForUser(UUID userId)"
+      ],
+      "testCases": [
+        "testAppendEvent",
+        "testReadEventsInOrder",
+        "testReplayCreatesSameState",
+        "testPayloadEscaping",
+        "testUnknownEventTypePolicy",
+        "testEventForUserFiltering"
+      ],
+      "notes": "Good for audit and restore."
+    },
+    "PD33": {
+      "id": "PD33",
+      "task": "Soft delete persistence",
+      "feature": "Persist deleted flag instead of removing records.",
+      "likelyHackathonTask": "Keep deleted posts/messages with deletedAt and deletedBy.",
+      "coreStructure": "posts.csv adds deleted,deletedAt,deletedBy",
+      "suggestedClasses": "SoftDeleteSerializerExtension",
+      "possibleApi": [
+        "markDeleted(UUID targetId, UUID moderatorId)",
+        "isDeleted(UUID targetId)",
+        "writeDeletedState()"
+      ],
+      "testCases": [
+        "testDeletedFlagPersists",
+        "testDeletedPostHiddenAfterLoad",
+        "testAdminCanStillSeeDeleted",
+        "testDeleteTimestampPersists",
+        "testRestoreClearsDeletedFlag",
+        "testOldRowsDefaultNotDeleted"
+      ],
+      "notes": "Pairs with moderation and State."
+    },
+    "PD34": {
+      "id": "PD34",
+      "task": "Archive old posts",
+      "feature": "Move old posts/messages to archive files.",
+      "likelyHackathonTask": "Write older data to archive while keeping current feed smaller.",
+      "coreStructure": "posts_archive.csv, messages_archive.csv",
+      "suggestedClasses": "ArchiveManager",
+      "possibleApi": [
+        "archiveBefore(long cutoff)",
+        "loadArchive()",
+        "searchArchive(String keyword)"
+      ],
+      "testCases": [
+        "testOldPostsArchived",
+        "testRecentPostsNotArchived",
+        "testArchiveFileCreated",
+        "testArchivedPostCanBeLoaded",
+        "testArchiveDoesNotDuplicatePosts",
+        "testCutoffBoundary"
+      ],
+      "notes": "Performance-oriented persistence."
+    },
+    "PD35": {
+      "id": "PD35",
+      "task": "Export user data",
+      "feature": "Export one user’s posts/messages/settings.",
+      "likelyHackathonTask": "Generate user-specific file for privacy/backup.",
+      "coreStructure": "user_export_<id>.json/csv",
+      "suggestedClasses": "UserDataExportService",
+      "possibleApi": [
+        "exportUser(UUID userId)",
+        "importUserData(File file)",
+        "recordsOwnedBy(UUID userId)"
+      ],
+      "testCases": [
+        "testExportIncludesOwnPosts",
+        "testExportIncludesOwnMessages",
+        "testExportExcludesOtherUsersData",
+        "testImportRestoresData",
+        "testUnknownUserExportPolicy",
+        "testSpecialTextEscaped"
+      ],
+      "notes": "Good backend utility."
+    },
+    "PD36": {
+      "id": "PD36",
+      "task": "Seed data import",
+      "feature": "Load initial demo data for testing.",
+      "likelyHackathonTask": "Import users/posts/messages from provided files.",
+      "coreStructure": "seed_users.csv, seed_posts.csv, seed_messages.csv",
+      "suggestedClasses": "SeedDataImporter",
+      "possibleApi": [
+        "importSeedData()",
+        "clearAndImport()",
+        "mergeImport()"
+      ],
+      "testCases": [
+        "testImportCreatesUsers",
+        "testImportCreatesPosts",
+        "testMergeDoesNotDuplicate",
+        "testClearAndImportClearsOldData",
+        "testMalformedSeedThrows",
+        "testSeedDataRelationships"
+      ],
+      "notes": "Useful for hackathon demo."
+    },
+    "PD37": {
+      "id": "PD37",
+      "task": "Dirty-flag batch save",
+      "feature": "Only save changed DAOs.",
+      "likelyHackathonTask": "Track dirty state and batch write changed files.",
+      "coreStructure": "N/A",
+      "suggestedClasses": "DirtyTrackingDAO, BatchSaveManager",
+      "possibleApi": [
+        "markDirty(String entityName)",
+        "isDirty(String entityName)",
+        "saveDirtyOnly()",
+        "clearDirtyFlags()"
+      ],
+      "testCases": [
+        "testAddPostMarksPostsDirty",
+        "testSaveClearsDirtyFlag",
+        "testUnchangedDAONotWritten",
+        "testMultipleDirtyDAOsSaved",
+        "testFailedSaveKeepsDirty",
+        "testDirtyFlagAfterDelete"
+      ],
+      "notes": "Performance and maintainability task."
+    },
+    "PD38": {
+      "id": "PD38",
+      "task": "Persistence error log",
+      "feature": "Log persistent-data failures.",
+      "likelyHackathonTask": "Write errors to a text log.",
+      "coreStructure": "errors.log",
+      "suggestedClasses": "PersistenceErrorLogger",
+      "possibleApi": [
+        "logError(String file, Exception e)",
+        "getRecentErrors(int n)",
+        "clearErrors()"
+      ],
+      "testCases": [
+        "testLogOneError",
+        "testLogMultipleErrors",
+        "testRecentErrorsOrder",
+        "testClearErrors",
+        "testErrorMessageContainsFile",
+        "testLoggerHandlesNullExceptionMessage"
+      ],
+      "notes": "Logging is explicitly useful for persistent data."
+    },
+    "PD39": {
+      "id": "PD39",
+      "task": "Schema documentation generator",
+      "feature": "Generate human-readable schema docs from serializers.",
+      "likelyHackathonTask": "Each serializer declares columns and types.",
+      "coreStructure": "schemas.md or schemas.txt",
+      "suggestedClasses": "SchemaDescriptor, SchemaRegistry",
+      "possibleApi": [
+        "schemaFor(String entity)",
+        "allSchemas()",
+        "writeSchemaDocumentation()"
+      ],
+      "testCases": [
+        "testSchemaContainsUserColumns",
+        "testSchemaContainsNewFeatureColumns",
+        "testAllSerializersRegistered",
+        "testSchemaWriteCreatesFile",
+        "testColumnOrderStable",
+        "testUnknownSchemaPolicy"
+      ],
+      "notes": "Good maintainability task."
+    },
+    "PD40": {
+      "id": "PD40",
+      "task": "Persistence performance benchmark",
+      "feature": "Measure save/load time for large datasets.",
+      "likelyHackathonTask": "Use timeout tests and timing output.",
+      "coreStructure": "N/A",
+      "suggestedClasses": "PersistenceBenchmark",
+      "possibleApi": [
+        "generateLargeDataset(int users, int posts, int messages)",
+        "timeWriteAll()",
+        "timeReadAll()"
+      ],
+      "testCases": [
+        "testWriteLargeDatasetWithinTimeout",
+        "testReadLargeDatasetWithinTimeout",
+        "testBenchmarkDoesNotChangeData",
+        "testLargeMessagesEscaped",
+        "testRepeatedRunsStableEnough",
+        "testMemoryDoesNotExplode"
+      ],
+      "notes": "Relates to performance analysis."
+    }
+  }
+}

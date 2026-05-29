@@ -1,0 +1,98 @@
+package hackathon;
+
+import dao.model.Message;
+import dao.model.Post;
+import dao.model.User;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.UUID;
+import org.junit.Test;
+import static org.junit.Assert.*;
+
+/**
+ * Tests DS06: User-to-message index.
+ */
+public class DS06_UserToMessageIndexTest {
+    // Verifies that adding a root creates one node.
+    @Test
+    public void addRootCreatesNode() {
+        DS06_UserToMessageIndex tree = new DS06_UserToMessageIndex();
+        UUID root = UUID.randomUUID();
+        tree.addRoot(root);
+        assertEquals(1, tree.nodeCount());
+    }
+
+    // Verifies direct children are recorded.
+    @Test
+    public void addChildStoresRelationship() {
+        DS06_UserToMessageIndex tree = new DS06_UserToMessageIndex();
+        UUID root = UUID.randomUUID();
+        UUID child = UUID.randomUUID();
+        tree.addChild(root, child);
+        assertEquals(Collections.singletonList(child), tree.childrenOf(root));
+    }
+
+    // Verifies parent lookup after adding a child.
+    @Test
+    public void parentLookupFindsParent() {
+        DS06_UserToMessageIndex tree = new DS06_UserToMessageIndex();
+        UUID root = UUID.randomUUID();
+        UUID child = UUID.randomUUID();
+        tree.addChild(root, child);
+        assertEquals(root, tree.parentOf(child).get());
+    }
+
+    // Verifies depth-first traversal order.
+    @Test
+    public void depthFirstVisitsBranchBeforeSibling() {
+        DS06_UserToMessageIndex tree = new DS06_UserToMessageIndex();
+        UUID root = UUID.randomUUID();
+        UUID child = UUID.randomUUID();
+        UUID grandchild = UUID.randomUUID();
+        tree.addChild(root, child);
+        tree.addChild(child, grandchild);
+        assertEquals(Arrays.asList(root, child, grandchild), tree.depthFirst(root));
+    }
+
+    // Verifies breadth-first traversal order.
+    @Test
+    public void breadthFirstVisitsLevelOrder() {
+        DS06_UserToMessageIndex tree = new DS06_UserToMessageIndex();
+        UUID root = UUID.randomUUID();
+        UUID left = UUID.randomUUID();
+        UUID right = UUID.randomUUID();
+        tree.addChild(root, left);
+        tree.addChild(root, right);
+        assertEquals(Arrays.asList(root, left, right), tree.breadthFirst(root));
+    }
+    // Verifies MiniLab posts messages and users can be represented as tree nodes.
+    @Test
+    public void miniLabModelNodesCanBeStored() {
+        DS06_UserToMessageIndex tree = new DS06_UserToMessageIndex();
+        Post post = post("root");
+        Message message = message(post.id, "reply", 5L);
+        User user = user("treeuser");
+        tree.addPostRoot(post);
+        tree.addMessageUnderThread(message);
+        tree.addUserRoot(user);
+        assertTrue(tree.childrenOf(post.id).contains(message.id()));
+        assertEquals(3, tree.nodeCount());
+    }
+
+    // Creates a MiniLab Post for integration tests.
+    private Post post(String topic) {
+        return new Post(UUID.randomUUID(), UUID.randomUUID(), topic);
+    }
+
+    // Creates a MiniLab Message for integration tests.
+    private Message message(UUID thread, String text, long timestamp) {
+        return new Message(UUID.randomUUID(), UUID.randomUUID(), thread, timestamp, text);
+    }
+
+    // Creates a MiniLab User for integration tests.
+    private User user(String username) {
+        return new User(UUID.randomUUID(), User.Role.Member, username, "password");
+    }
+
+
+}

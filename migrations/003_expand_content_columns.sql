@@ -1,0 +1,5 @@
+ALTER TABLE contents
+  ALTER COLUMN query TYPE TEXT,
+  ALTER COLUMN code TYPE TEXT,
+  ALTER COLUMN explanation TYPE TEXT,
+  ALTER COLUMN complexity TYPE TEXT;

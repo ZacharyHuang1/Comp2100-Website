@@ -1,0 +1,45 @@
+{
+  "name": "code-knowledge-base",
+  "version": "1.0.0",
+  "description": "Backend foundation for a code knowledge base platform.",
+  "main": "src/server.js",
+  "scripts": {
+    "dev": "nodemon src/server.js",
+    "start": "node src/server.js",
+    "migrate": "node src/db/runMigrations.js",
+    "db:setup": "node src/db/setupDatabase.js",
+    "import:codebase": "node scripts/importJavaCodebase.js",
+    "import:codebase:dry": "node scripts/importJavaCodebase.js --dry-run",
+    "enrich:codebase": "node scripts/enrichImportedJavaDocs.js",
+    "enrich:codebase:dry": "node scripts/enrichImportedJavaDocs.js --dry-run",
+    "index:symbols": "node scripts/indexJavaSymbols.js",
+    "generate:mock-hackathon": "node scripts/generateMockHackathonCodebase.js",
+    "document:mock-hackathon": "node scripts/normalizeMockHackathonMethodComments.js",
+    "attach:mock-hackathon-tests": "node scripts/attachMockHackathonTestCases.js",
+    "attach:mock-task-descriptions": "node scripts/attachMockHackathonTaskDescriptions.js",
+    "validate:mock-hackathon": "node scripts/validateMockHackathonCompleteness.js",
+    "validate:mock-hackathon-imports": "node scripts/validateMockHackathonImports.js",
+    "validate:mock-hackathon-content": "node scripts/validateMockHackathonWebsiteContent.js",
+    "validate:mock-task-descriptions": "node scripts/validateMockTaskDescriptions.js",
+    "validate:method-comments": "node scripts/validateMethodComments.js",
+    "seed:hackathon-git-guide": "node scripts/seedHackathonGitGuide.js",
+    "seed:documentation-guides": "node scripts/seedHackathonGitGuide.js",
+    "seed:mock-hackathon-folder-guides": "node scripts/seedMockHackathonFolderGuides.js",
+    "search:reindex": "node scripts/searchReindex.js",
+    "search:embed-missing": "node scripts/searchEmbedMissing.js",
+    "search:check": "node scripts/searchCheck.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.6.1",
+    "express": "^5.1.0",
+    "multer": "^2.1.1",
+    "pg": "^8.16.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}

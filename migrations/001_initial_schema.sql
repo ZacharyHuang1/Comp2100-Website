@@ -1,0 +1,34 @@
+CREATE TABLE IF NOT EXISTS categories (
+  id BIGSERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  slug VARCHAR(255) NOT NULL,
+  parent_id BIGINT REFERENCES categories(id) ON DELETE SET NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_categories_slug ON categories(slug);
+
+CREATE TABLE IF NOT EXISTS topics (
+  id BIGSERIAL PRIMARY KEY,
+  title VARCHAR(255) NOT NULL,
+  slug VARCHAR(255) NOT NULL,
+  category_id BIGINT NOT NULL REFERENCES categories(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_topics_slug ON topics(slug);
+
+CREATE TABLE IF NOT EXISTS contents (
+  id BIGSERIAL PRIMARY KEY,
+  topic_id BIGINT NOT NULL REFERENCES topics(id) ON DELETE CASCADE,
+  query TEXT NOT NULL,
+  code TEXT,
+  explanation TEXT,
+  complexity VARCHAR(50),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_contents_query ON contents(query);

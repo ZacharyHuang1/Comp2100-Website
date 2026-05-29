@@ -1,0 +1,104 @@
+# AVLTree.java
+
+## Explanation
+
+This file defines the AVLTree class in the sorteddata.avltree package. It belongs to src/sorteddata/avltree in the COMP2100 MiniLab codebase and implements AVL tree behavior for balanced sorted data operations. Key methods include clone, insert, get, toString, getRandom.
+
+## Complexity
+
+Typical AVL tree operations such as search, insertion, and deletion are O(log n), assuming the tree remains height-balanced.
+
+## UML
+
+```mermaid
+classDiagram
+class AVLTree {
+  -comparator: Comparator<T>
+  -root: AVLNode<T>
+  +AVLTree(comparator: Comparator<T>)
+  -AVLTree(comparator: Comparator<T>, root: AVLNode<T>)
+  +clone() AVLTree<T>
+  +insert(element: T) boolean
+  +get(value: T) T
+  +toString() String
+  +getRandom() T
+  +getAtIndex(i: int) T
+  +getRange(start: T, count: int, backwards: boolean) Iterator<T>
+  +slice(size: int) AVLTreeSlice<T>
+}
+```
+
+## Code
+```java
+package sorteddata.avltree;
+
+import sorteddata.SortedData;
+import sorteddata.SortedDataSubject;
+
+import java.util.*;
+
+public class AVLTree<T> extends SortedData<T> {
+	private static final Random random = new Random();
+	private final Comparator<T> comparator;
+	private AVLNode<T> root;
+
+	public AVLTree(Comparator<T> comparator) {
+		this(comparator, new AVLNodeEmpty<T>(comparator));
+	}
+
+	private AVLTree(Comparator<T> comparator, AVLNode<T> root) {
+		this.comparator = comparator;
+		this.root = root;
+	}
+
+	public AVLTree<T> clone() {
+		return new AVLTree<>(comparator, root);
+	}
+
+	public boolean insert(T element) {
+		if (root.contains(element)) return false;
+		root = root.insert(element);
+		for (SortedDataSubject<T> listener : listeners) {
+			listener.onAdd(element);
+		}
+		return true;
+	}
+
+	public T get(T value) {
+		return root.get(value);
+	}
+
+	public String toString() {
+		return "AVLTree[%s]".formatted(root.toString());
+	}
+
+	public T getRandom() {
+		if (root.size() == 0) return null;
+		return root.getAtIndex(random.nextInt(root.size()));
+	}
+
+	public T getAtIndex(int i) {
+		if (root instanceof AVLNodeEmpty<T>) return null;
+		return root.getAtIndex(i);
+	}
+
+	public Iterator<T> getRange(T start, int count, boolean backwards) {
+		return new AVLIterator<>(start, root, comparator, count, backwards);
+	}
+
+	public AVLTreeSlice<T> slice(int size) {
+		AVLTreeSlice<T> slice = new AVLTreeSlice<>(this, comparator, size);
+		registerListener(slice);
+		return slice;
+	}
+
+	private final Set<SortedDataSubject<T>> listeners = new HashSet<>();
+	public void registerListener(SortedDataSubject<T> subject) {
+		listeners.add(subject);
+	}
+	public void deregisterListener(SortedDataSubject<T> subject) {
+		listeners.remove(subject);
+	}
+}
+
+```
